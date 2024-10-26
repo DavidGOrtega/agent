@@ -30,7 +30,7 @@ import {
   AgentDecideOptions,
 } from './types';
 import { simplePlanner } from './planners/simplePlanner';
-import { agentDecide } from './decision';
+import { agentDecide } from './decide';
 import { getMachineHash, isActorRef, randomId } from './utils';
 import {
   experimental_wrapLanguageModel,
@@ -405,7 +405,7 @@ export class Agent<
   }) {
     super(logic);
     this.model = model;
-    this.episodeId = id ?? '';
+    this.episodeId = id ?? randomId();
     this.name = name;
     this.description = description;
     this.events = events;

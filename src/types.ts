@@ -13,6 +13,7 @@ import {
 } from 'xstate';
 import {
   CoreMessage,
+  GenerateObjectResult,
   generateText,
   GenerateTextResult,
   LanguageModel,
@@ -55,21 +56,31 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
   previousPlan?: AgentPlan<TEvent>;
 };
 
+export type AgentPath<TEvent extends EventObject> = {
+  /** The expected ending state of the path */
+  state: ObservedState | undefined;
+  /** The steps to reach the ending state */
+  steps: Array<{
+    event: TEvent;
+    state: ObservedState | undefined;
+  }>;
+  weight?: number;
+};
+
 export type AgentPlan<TEvent extends EventObject> = {
   goal: string;
-  state: ObservedState;
-  content?: string;
   /**
-   * Executes the plan based on the given `state` and resolves with
-   * a potential next `event` to trigger to achieve the `goal`.
+   * The ending state of the plan.
    */
-  execute: (state: ObservedState) => Promise<TEvent | undefined>;
+  goalState: ObservedState | undefined;
   /**
    * The next event that the agent decided needs to occur to achieve the `goal`.
    */
   nextEvent: TEvent | undefined;
+  paths: AgentPath<TEvent>[];
   episodeId: string;
   timestamp: number;
+  // result: GenerateObjectResult<any>;
 };
 
 export interface TransitionData {

@@ -6,7 +6,7 @@ import {
   AnyStateNode,
 } from 'xstate';
 import hash from 'object-hash';
-import { TransitionData } from './types';
+import { ObservedState, TransitionData } from './types';
 
 export function getAllTransitions(state: AnyMachineSnapshot): TransitionData[] {
   const nodes = state._nodes;
@@ -59,10 +59,11 @@ export function wrapInXml(tagName: string, content: string): string {
   return `<${tagName}>${content}</${tagName}>`;
 }
 
-export function randomId() {
+export function randomId(prefix?: string): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 9);
-  return timestamp + random;
+  // return timestamp + random;
+  return `${prefix || ''}${timestamp}${random}`;
 }
 
 const machineHashes: WeakMap<AnyStateMachine, string> = new WeakMap();
@@ -85,4 +86,20 @@ export function isActorRef(
     'system' in actorRefLike &&
     'sessionId' in actorRefLike
   );
+}
+
+export function getTransitions(
+  state: ObservedState,
+  machine: AnyStateMachine
+): TransitionData[] {
+  if (!machine) {
+    return [];
+  }
+
+  const resolvedState = machine.resolveState({
+    ...state,
+    // Need this property defined to make TS happy
+    context: state.context,
+  });
+  return getAllTransitions(resolvedState);
 }

@@ -50,8 +50,10 @@
   "dependencies": {
     "@xstate/graph": "^2.0.1",
     "ai": "^3.4.17",
+    "ajv": "^8.17.1",
     "object-hash": "^3.0.0",
-    "xstate": "^5.18.2"
+    "xstate": "^5.18.2",
+    "zod-to-json-schema": "^3.23.3"
   },
   "packageManager": "pnpm@8.11.0"
 }
