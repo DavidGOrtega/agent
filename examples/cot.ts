@@ -50,7 +50,7 @@ const machine = setup({
         src: 'agent',
         input: ({ context }) => ({
           context,
-          goal: 'Answer the question. Think step-by-step.',
+          goal: 'Think step-by-step about how you would answer the question',
         }),
       },
       on: {

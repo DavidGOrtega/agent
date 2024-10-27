@@ -87,6 +87,7 @@ export async function simplePlanner<T extends AnyAgent>(
   }
 
   return {
+    planner: 'simple',
     goal: input.goal,
     goalState: input.state,
     nextEvent: singleResult.result,

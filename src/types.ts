@@ -56,18 +56,26 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
   previousPlan?: AgentPlan<TEvent>;
 };
 
+export type AgentStep<TEvent extends EventObject> = {
+  /** The event to take */
+  event: TEvent;
+  /** The next expected state after taking the event */
+  state: ObservedState | undefined;
+};
+
 export type AgentPath<TEvent extends EventObject> = {
   /** The expected ending state of the path */
   state: ObservedState | undefined;
   /** The steps to reach the ending state */
-  steps: Array<{
-    event: TEvent;
-    state: ObservedState | undefined;
-  }>;
+  steps: Array<AgentStep<TEvent>>;
   weight?: number;
 };
 
 export type AgentPlan<TEvent extends EventObject> = {
+  /**
+   * The planner used to generate the plan
+   */
+  planner: string;
   goal: string;
   /**
    * The ending state of the plan.

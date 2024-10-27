@@ -1,4 +1,4 @@
-import { createAgent, fromDecision } from '../src';
+import { createAgent } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { shortestPathPlanner } from '../src/planners/shortestPathPlanner';
 
 const agent = createAgent({
   name: 'die-hard-solver',
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   events: {
     fill3: z.object({}).describe('Fill the 3-gallon jug'),
     fill5: z.object({}).describe('Fill the 5-gallon jug'),

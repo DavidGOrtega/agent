@@ -6,7 +6,7 @@ import { fromTerminal } from './helpers/helpers';
 
 const agent = createAgent({
   name: 'email',
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   events: {
     askForClarification: z.object({
       questions: z.array(z.string()).describe('The questions to ask the agent'),

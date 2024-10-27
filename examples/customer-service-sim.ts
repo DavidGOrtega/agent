@@ -6,7 +6,7 @@ import { z } from 'zod';
 // Create customer service agent
 const customerServiceAgent = createAgent({
   name: 'customer-service',
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   events: {
     'agent.respond': z.object({
       response: z
