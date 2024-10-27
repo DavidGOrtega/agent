@@ -149,6 +149,7 @@ const machine = setup({
         src: 'agent',
         input: ({ context }) => ({
           goal: 'Report the weather', // TODO
+          context,
         }),
       },
       on: {
@@ -167,11 +168,7 @@ const machine = setup({
   },
 });
 
-const actor = createActor(machine, {
-  input: {
-    location: 'New York',
-  },
-});
+const actor = createActor(machine);
 actor.subscribe((s) => {
   console.log(s.value);
 });
