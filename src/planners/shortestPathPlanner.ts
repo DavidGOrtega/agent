@@ -5,6 +5,7 @@ import {
   AgentPlanInput,
   AgentStep,
   AnyAgent,
+  CostFunction,
   ObservedState,
 } from '../types';
 import { getShortestPaths } from '@xstate/graph';
@@ -38,6 +39,8 @@ export async function shortestPathPlanner<T extends AnyAgent>(
   agent: T,
   input: AgentPlanInput<any>
 ): Promise<AgentPlan<any> | undefined> {
+  const costFunction: CostFunction<any> =
+    input.costFunction ?? ((path) => path.weight ?? Infinity);
   const existingPlan = agent
     .getPlans()
     .find((p) => p.planner === 'shortestPath' && p.goal === input.goal);
@@ -135,15 +138,15 @@ Examples:
         steps: trimmedSteps,
       };
     })
-    .filter((p) => p !== undefined);
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   // Sort paths from least weight to most weight
   const sortedPaths = trimmedPaths.sort(
-    (a, b) => (a.weight ?? 0) - (b.weight ?? 0)
+    (a, b) => costFunction(a) - costFunction(b)
   );
 
-  const leastWeightPath = sortedPaths[0]!;
-  const nextStep = leastWeightPath.steps[0];
+  const leastWeightPath = sortedPaths[0];
+  const nextStep = leastWeightPath?.steps[0];
 
   return {
     planner: 'shortestPath',

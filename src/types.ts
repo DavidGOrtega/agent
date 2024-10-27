@@ -27,6 +27,10 @@ export type GenerateTextOptions = Parameters<typeof generateText>[0];
 
 export type StreamTextOptions = Parameters<typeof streamText>[0];
 
+export type CostFunction<TEvent extends EventObject> = (
+  path: AgentPath<TEvent>
+) => number;
+
 export type AgentPlanInput<TEvent extends EventObject> = Omit<
   GenerateTextOptions,
   'prompt' | 'tools'
@@ -54,6 +58,11 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
    * The previous plan.
    */
   previousPlan?: AgentPlan<TEvent>;
+
+  /**
+   * The total cost of the path to the goal state.
+   */
+  costFunction?: CostFunction<TEvent>;
 };
 
 export type AgentStep<TEvent extends EventObject> = {
@@ -83,8 +92,13 @@ export type AgentPlan<TEvent extends EventObject> = {
   goalState: ObservedState | undefined;
   /**
    * The next event that the agent decided needs to occur to achieve the `goal`.
+   *
+   * This next event is chosen from the
    */
   nextEvent: TEvent | undefined;
+  /**
+   * The paths that the agent can take to achieve the goal.
+   */
   paths: AgentPath<TEvent>[];
   episodeId: string;
   timestamp: number;
