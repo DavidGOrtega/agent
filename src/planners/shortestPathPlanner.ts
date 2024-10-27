@@ -48,8 +48,6 @@ export async function shortestPathPlanner<T extends AnyAgent>(
     console.log('Existing plan found');
   }
 
-  const toolMap = getToolMap(agent, input);
-
   if (!input.machine && !existingPlan) {
     return;
   }
@@ -139,9 +137,12 @@ Examples:
     })
     .filter((p) => p !== undefined);
 
-  const leastWeightPath = trimmedPaths.sort(
+  // Sort paths from least weight to most weight
+  const sortedPaths = trimmedPaths.sort(
     (a, b) => (a.weight ?? 0) - (b.weight ?? 0)
-  )[0]!;
+  );
+
+  const leastWeightPath = sortedPaths[0]!;
   const nextStep = leastWeightPath.steps[0];
 
   return {
