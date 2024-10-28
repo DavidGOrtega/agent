@@ -20,7 +20,7 @@ const agent = createAgent({
 
 const machine = setup({
   types: agent.types,
-  actors: { agent: fromDecision(agent), getFromTerminal: fromTerminal },
+  actors: { getFromTerminal: fromTerminal },
 }).createMachine({
   initial: 'listening',
   context: {
@@ -40,16 +40,6 @@ const machine = setup({
       },
     },
     responding: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            userMessage: 'User says: ' + context.userMessage,
-          },
-          messages: agent.getMessages(),
-          goal: 'Respond to the user, unless they want to end the conversation.',
-        }),
-      },
       on: {
         'agent.respond': {
           actions: log(({ event }) => `Agent: ${event.response}`),
@@ -68,4 +58,9 @@ const machine = setup({
   },
 });
 
-createActor(machine).start();
+const actor = createActor(machine).start();
+
+agent.interact(actor, () => ({
+  goal: 'Respond to the user, unless they want to end the conversation.',
+  messages: agent.getMessages(),
+}));
