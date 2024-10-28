@@ -48,13 +48,17 @@ const agent = createAgent({
   name: 'joke-teller',
   model: openai('gpt-4o-mini'),
   events: {
-    askForTopic: z.object({
-      topic: z.string().describe('The topic for the joke'),
-    }),
+    askForTopic: z
+      .object({
+        topic: z.string().describe('The topic for the joke'),
+      })
+      .describe('Ask for a new topic, because the last joke rated 6 or lower'),
     'agent.tellJoke': z.object({
       joke: z.string().describe('The joke text'),
     }),
-    'agent.endJokes': z.object({}).describe('End the jokes'),
+    'agent.endJokes': z
+      .object({})
+      .describe('End the jokes, since the last joke rated 7 or higher'),
     'agent.rateJoke': z.object({
       rating: z.number().min(1).max(10),
       explanation: z.string(),
@@ -107,21 +111,11 @@ const jokeMachine = setup({
       },
     },
     tellingJoke: {
-      invoke: [
-        {
-          src: 'agent',
-          input: ({ context }) => ({
-            context: {
-              topic: context.topic,
-            },
-            goal: `Tell me a joke about the topic. Do not make any joke that is not relevant to the topic.`,
-          }),
-        },
-        {
-          src: 'loader',
-          input: getRandomFunnyPhrase,
-        },
-      ],
+      invoke: {
+        src: 'loader',
+        input: getRandomFunnyPhrase,
+      },
+
       on: {
         'agent.tellJoke': {
           actions: [
@@ -135,16 +129,6 @@ const jokeMachine = setup({
       },
     },
     relevance: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            topic: context.topic,
-            lastJoke: context.jokes.at(-1),
-          },
-          goal: 'An irrelevant joke has no reference to the topic. If the last joke is completely irrelevant to the topic, ask for a new joke topic. Otherwise, continue.',
-        }),
-      },
       on: {
         'agent.markRelevancy': [
           {
@@ -160,21 +144,11 @@ const jokeMachine = setup({
       },
     },
     rateJoke: {
-      invoke: [
-        {
-          src: 'agent',
-          input: ({ context }) => ({
-            context: {
-              jokes: context.jokes,
-            },
-            goal: `Rate the last joke on a scale of 1 to 10.`,
-          }),
-        },
-        {
-          src: 'loader',
-          input: getRandomRatingPhrase,
-        },
-      ],
+      invoke: {
+        src: 'loader',
+        input: getRandomRatingPhrase,
+      },
+
       on: {
         'agent.rateJoke': {
           actions: [
@@ -190,26 +164,14 @@ const jokeMachine = setup({
       },
     },
     decide: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            lastRating: context.lastRating,
-          },
-          goal: `Choose what to do next, given the previous rating of the joke.`,
-        }),
-      },
       on: {
         askForTopic: {
           target: 'waitingForTopic',
           actions: log("That joke wasn't good enough. Let's try again."),
-          description:
-            'Ask for a new topic, because the last joke rated 6 or lower',
         },
         'agent.endJokes': {
           target: 'end',
           actions: log('That joke was good enough. Goodbye!'),
-          description: 'End the jokes, since the last joke rated 7 or higher',
         },
       },
     },
@@ -223,5 +185,44 @@ const jokeMachine = setup({
 });
 
 const actor = createActor(jokeMachine);
+
+agent.interact(actor, (observed) => {
+  if (observed.state.matches('tellingJoke')) {
+    return {
+      goal: 'Tell me a joke about the topic. Do not make any joke that is not relevant to the topic.',
+      context: {
+        topic: observed.state.context.topic,
+      },
+    };
+  }
+
+  if (observed.state.matches('relevance')) {
+    return {
+      goal: 'An irrelevant joke has no reference to the topic. If the last joke is completely irrelevant to the topic, ask for a new joke topic. Otherwise, continue.',
+      context: {
+        topic: observed.state.context.topic,
+        lastJoke: observed.state.context.jokes.at(-1),
+      },
+    };
+  }
+
+  if (observed.state.matches('rateJoke')) {
+    return {
+      goal: 'Rate the last joke on a scale of 1 to 10.',
+      context: {
+        lastJoke: observed.state.context.jokes.at(-1),
+      },
+    };
+  }
+
+  if (observed.state.matches('decide')) {
+    return {
+      goal: 'Choose what to do next, given the previous rating of the joke.',
+      context: {
+        lastRating: observed.state.context.lastRating,
+      },
+    };
+  }
+});
 
 actor.start();

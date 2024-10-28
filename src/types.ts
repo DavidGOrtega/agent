@@ -340,7 +340,7 @@ export interface AgentObservationInput {
 export type AgentDecisionInput = {
   goal: string;
   model?: LanguageModel;
-  context?: any;
+  context?: Record<string, any>;
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
 export type AgentDecisionLogic<TEvents extends EventObject> = PromiseActorLogic<

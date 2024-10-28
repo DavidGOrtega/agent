@@ -20,7 +20,6 @@ const events = {
       .max(8)
       .describe('The index of the cell for o to play on'),
   }),
-  reset: z.object({}).describe('Reset the game to the initial state'),
 };
 
 const context = {
@@ -85,10 +84,13 @@ function getWinner(board: typeof initialContext.board): Player | null {
 export const ticTacToeMachine = setup({
   types: {
     context: xAgent.types.context,
-    events: xAgent.types.events,
+    events: {} as
+      | typeof xAgent.types.events
+      | {
+          type: 'reset';
+        },
   },
   actors: {
-    agent: fromDecision(xAgent),
     gameReporter: fromTextStream(xAgent),
   },
   actions: {
