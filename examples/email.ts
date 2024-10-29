@@ -6,7 +6,7 @@ import { fromTerminal } from './helpers/helpers';
 
 const agent = createAgent({
   id: 'email',
-  model: openai('gpt-4o'),
+  model: openai('gpt-4o-mini'),
   events: {
     askForClarification: z.object({
       questions: z.array(z.string()).describe('The questions to ask the agent'),
@@ -14,6 +14,14 @@ const agent = createAgent({
     submitEmail: z.object({
       email: z.string().describe('The email to submit'),
     }),
+  },
+  context: {
+    email: z.string().describe('The email to respond to'),
+    instructions: z.string().describe('The instructions for the email'),
+    clarifications: z
+      .array(z.string())
+      .describe('The clarifications to the email'),
+    replyEmail: z.string().nullable().describe('The email to submit'),
   },
 });
 
@@ -24,12 +32,7 @@ const machine = setup({
       email: string;
       instructions: string;
     },
-    context: {} as {
-      email: string;
-      instructions: string;
-      clarifications: string[];
-      replyEmail: string | null;
-    },
+    context: agent.types.context,
   },
   actors: { getFromTerminal: fromTerminal },
 }).createMachine({
