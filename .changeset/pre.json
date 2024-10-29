@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "@statelyai/agent": "1.1.6"
+  },
+  "changesets": [
+    "light-hats-drive"
+  ]
+}
