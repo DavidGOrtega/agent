@@ -50,11 +50,11 @@ const machine = setup({
     makingGoal: {
       invoke: {
         src: 'decider',
-        input: {
-          context: true,
+        input: ({ context }) => ({
+          context,
           goal: 'Determine what the user wants to accomplish. What is their ideal goal state? ',
           maxRetries: 3,
-        },
+        }),
       },
       on: {
         'agent.createGoal': {
@@ -71,11 +71,11 @@ const machine = setup({
     responding: {
       invoke: {
         src: 'decider',
-        input: {
-          context: true,
+        input: ({ context }) => ({
+          context,
           goal: 'Answer the question to achieve the stated goal, unless the goal is impossible to achieve.',
           maxRetries: 3,
-        },
+        }),
       },
       on: {
         'agent.respond': {

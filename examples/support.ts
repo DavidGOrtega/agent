@@ -101,11 +101,11 @@ const machine = setup({
     technical: {
       invoke: {
         src: 'agent',
-        input: {
-          context: true,
+        input: ({ context }) => ({
+          context,
           system: `You are an expert at diagnosing technical computer issues. You work for a company called LangCorp that sells computers. Help the user to the best of your ability, but be concise in your responses.`,
           goal: 'Solve the customer issue.',
-        },
+        }),
       },
       on: {
         'agent.technical.solve': {

@@ -65,14 +65,9 @@ export function fromDecision(
       ...defaultInput,
       ...inputObject,
     };
-    const contextToInclude =
-      resolvedInput.context === true
-        ? // include entire context
-          parentRef.getSnapshot().context
-        : resolvedInput.context;
     const state = {
       value: snapshot.value,
-      context: contextToInclude,
+      context: resolvedInput.context,
     };
 
     const plan = await agentDecide(agent, {

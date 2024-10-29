@@ -56,8 +56,8 @@ const machine = setup({
         teaching: {
           invoke: {
             src: 'agent',
-            input: () => ({
-              context: true,
+            input: ({ context }) => ({
+              context,
               goal: 'Give brief feedback to the human based on the most recent response of the conversation',
               maxTokens: 100,
             }),
@@ -72,8 +72,8 @@ const machine = setup({
         responding: {
           invoke: {
             src: 'agent',
-            input: () => ({
-              context: true,
+            input: ({ context }) => ({
+              context,
               goal: 'Respond to the last message of the conversation in Spanish',
             }),
           },

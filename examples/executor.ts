@@ -33,10 +33,10 @@ const machine = createMachine({
     deciding: {
       invoke: {
         src: fromDecision(agent),
-        input: {
+        input: ({ context }) => ({
           goal: 'Satisfy the user question',
-          context: true,
-        },
+          context,
+        }),
       },
       on: {
         getTime: 'gettingTime',
