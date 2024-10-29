@@ -25,7 +25,7 @@ const agent = createAgent({
 
 const machine = setup({
   types: agent.types,
-  actors: { agent: fromDecision(agent), getFromTerminal: fromTerminal },
+  actors: { getFromTerminal: fromTerminal },
 }).createMachine({
   initial: 'asking',
   context: {
@@ -46,17 +46,10 @@ const machine = setup({
       },
     },
     thinking: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context,
-          goal: 'Think step-by-step about how you would answer the question',
-        }),
-      },
       on: {
         'agent.think': {
           actions: [
-            log(({ event }) => event.thought),
+            log(({ event }) => `Thought: ${event.thought}`),
             assign({
               thought: ({ event }) => event.thought,
             }),
@@ -66,16 +59,9 @@ const machine = setup({
       },
     },
     answering: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context,
-          goal: 'Answer the question',
-        }),
-      },
       on: {
         'agent.answer': {
-          actions: [log(({ event }) => event.answer)],
+          actions: log(({ event }) => `Answer: ${event.answer}`),
           target: 'answered',
         },
       },
@@ -86,4 +72,21 @@ const machine = setup({
   },
 });
 
-createActor(machine).start();
+const actor = createActor(machine).start();
+
+agent.interact(actor, (obs) => {
+  if (obs.state.matches('thinking')) {
+    return {
+      goal: 'Think step-by-step about how you would answer the question',
+      context: obs.state.context,
+      messages: agent.getMessages(),
+    };
+  }
+  if (obs.state.matches('answering')) {
+    return {
+      goal: 'Answer the question',
+      context: obs.state.context,
+      messages: agent.getMessages(),
+    };
+  }
+});
