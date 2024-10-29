@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai';
 import { CoreMessage, generateText, streamText } from 'ai';
 
 const agent = createAgent({
-  name: 'wiki',
+  id: 'wiki',
   model: openai('gpt-4o-mini'),
   events: {
     provideAnswer: z.object({

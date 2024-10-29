@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 // Create customer service agent
 const customerServiceAgent = createAgent({
-  name: 'customer-service',
+  id: 'customer-service',
   model: openai('gpt-4o'),
   events: {
     'agent.respond': z.object({
@@ -14,12 +14,12 @@ const customerServiceAgent = createAgent({
         .describe('The response from the customer service agent'),
     }),
   },
-  system: 'You are a customer service agent for an airline.',
+  description: 'You are a customer service agent for an airline.',
 });
 
 // Create simulated customer agent
 const customerAgent = createAgent({
-  name: 'customer',
+  id: 'customer',
   model: openai('gpt-4o-mini'),
   events: {
     'agent.respond': z.object({
@@ -27,7 +27,7 @@ const customerAgent = createAgent({
     }),
     'agent.finish': z.object({}).describe('End the conversation'),
   },
-  system: `You are Harrison, a customer trying to get a refund for a trip to Alaska.
+  description: `You are Harrison, a customer trying to get a refund for a trip to Alaska.
 You want them to give you ALL the money back. Be extremely persistent. This trip happened 5 years ago.
 If you have nothing more to add to the conversation, send agent.finish event.`,
 });

@@ -4,7 +4,7 @@ import { openai } from '@ai-sdk/openai';
 import { getFromTerminal } from './helpers/helpers';
 
 const agent = createAgent({
-  name: 'chatbot',
+  id: 'chatbot',
   model: openai('gpt-4o-mini'),
   events: {
     'agent.respond': z.object({

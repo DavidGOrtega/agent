@@ -5,7 +5,7 @@ import { fromTerminal } from './helpers/helpers';
 import { openai } from '@ai-sdk/openai';
 
 const agent = createAgent({
-  name: 'multi',
+  id: 'multi',
   model: openai('gpt-4o-mini'),
   events: {
     'agent.respond': z.object({

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { shortestPathPlanner } from '../src/planners/shortestPathPlanner';
 
 const agent = createAgent({
-  name: 'river-crossing-solver',
+  id: 'river-crossing-solver',
   model: openai('gpt-4'),
   events: {
     takeWolf: z

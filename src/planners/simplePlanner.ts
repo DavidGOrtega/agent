@@ -62,13 +62,14 @@ export async function simplePlanner<T extends AnyAgent>(
 
   const result = await generateText({
     ...rest,
+    system: input.system ?? agent.description,
     model,
     messages,
     tools: toolMap as any,
     toolChoice: input.toolChoice ?? 'required',
   });
 
-  result.responseMessages.forEach((m) => {
+  result.response.messages.forEach((m) => {
     const message: CoreMessage = m;
 
     agent.addMessage({

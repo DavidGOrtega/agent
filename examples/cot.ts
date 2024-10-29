@@ -5,7 +5,7 @@ import { assign, createActor, log, setup } from 'xstate';
 import { fromTerminal } from './helpers/helpers';
 
 const agent = createAgent({
-  name: 'chain-of-thought',
+  id: 'chain-of-thought',
   model: openai('gpt-4o-mini'),
   events: {
     'agent.think': z.object({

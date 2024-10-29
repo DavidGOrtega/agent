@@ -49,7 +49,7 @@ const getWeather = fromPromise(async ({ input }: { input: string }) => {
 });
 
 const agent = createAgent({
-  name: 'weather',
+  id: 'weather',
   model: openai('gpt-4o-mini'),
   events: {
     'agent.getWeather': z.object({

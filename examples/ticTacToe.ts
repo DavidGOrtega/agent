@@ -39,14 +39,14 @@ const context = {
 };
 
 const xAgent = createAgent({
-  name: 'tic-tac-toe-learner',
+  id: 'tic-tac-toe-learner',
   model: openai('gpt-4o-mini'),
   events,
   context,
 });
 
 const oAgent = createAgent({
-  name: 'tic-tac-toe-noob',
+  id: 'tic-tac-toe-noob',
   model: openai('gpt-4o-mini'),
   events,
   context,

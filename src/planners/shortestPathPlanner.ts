@@ -59,6 +59,7 @@ export async function shortestPathPlanner<T extends AnyAgent>(
     const contextSchema = zodToJsonSchema(z.object(agent.context));
     const result = await generateObject({
       model: agent.model,
+      system: input.system ?? agent.description,
       prompt: `
 <goal>
 ${input.goal}

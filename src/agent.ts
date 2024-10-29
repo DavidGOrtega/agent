@@ -98,22 +98,18 @@ export function createAgent<
   TContext = ContextFromZodContextMapping<TContextSchema>
 >({
   id,
-  name,
-  description,
+  description: description,
   model,
   events,
   context,
   planner = simplePlanner as AgentPlanner<Agent<TContextSchema, TEventSchemas>>,
-  stringify = JSON.stringify,
-  getMemory,
   logic = agentLogic as AgentLogic<TEvents>,
-  ...generateTextOptions
 }: {
   /**
    * The unique identifier for the agent.
    *
    * This should be the same across all sessions of a specific agent, as it can be
-   * used to retrieve memory for this agent.
+   * used to retrieve memory for previous episodes of this agent.
    *
    * @example
    * ```ts
@@ -124,10 +120,6 @@ export function createAgent<
    * ```
    */
   id?: string;
-  /**
-   * The name of the agent
-   */
-  name?: string;
   /**
    * A description of the role of the agent
    */
@@ -150,210 +142,17 @@ export function createAgent<
    * Agent logic
    */
   logic?: AgentLogic<TEvents>;
+  model: LanguageModel;
 } & GenerateTextOptions): Agent<TContextSchema, TEventSchemas> {
   return new Agent({
     id,
     context,
     events,
-    name,
     description,
     planner,
     model,
     logic,
   }) as any;
-  // const agent = createActor(logic) as unknown as Agent<TContext, TEvents>;
-  // agent.events = events;
-  // agent.model = model;
-  // agent.name = name;
-  // agent.description = description;
-  // agent.defaultOptions = { ...generateTextOptions, model };
-  // agent.memory = getMemory ? getMemory(agent) : undefined;
-
-  // agent.onMessage = (callback) => {
-  //   agent.on('message', (ev) => callback(ev.message));
-  // };
-
-  // agent.decide = (opts) => {
-  //   return agentDecide(agent, opts);
-  // };
-
-  // agent.addMessage = (messageInput) => {
-  //   const message = {
-  //     ...messageInput,
-  //     id: messageInput.id ?? randomId(),
-  //     timestamp: messageInput.timestamp ?? Date.now(),
-  //     sessionId: agent.sessionId,
-  //   } satisfies AgentMessage;
-  //   agent.send({
-  //     type: 'agent.message',
-  //     message,
-  //   });
-
-  //   return message;
-  // };
-  // agent.getMessages = () => agent.getSnapshot().context.messages;
-
-  // agent.addFeedback = (feedbackInput) => {
-  //   const feedback = {
-  //     ...feedbackInput,
-  //     attributes: { ...feedbackInput.attributes },
-  //     reward: feedbackInput.reward ?? 0,
-  //     timestamp: feedbackInput.timestamp ?? Date.now(),
-  //     sessionId: agent.sessionId,
-  //   } satisfies AgentFeedback;
-  //   agent.send({
-  //     type: 'agent.feedback',
-  //     feedback,
-  //   });
-  //   return feedback;
-  // };
-  // agent.getFeedback = () => agent.getSnapshot().context.feedback;
-
-  // agent.addObservation = (observationInput) => {
-  //   const { prevState, event, state } = observationInput;
-  //   const observedState = { context: state.context, value: state.value };
-  //   const observedPrevState = prevState
-  //     ? {
-  //         context: prevState.context,
-  //         value: prevState.value,
-  //       }
-  //     : undefined;
-  //   const observation = {
-  //     prevState: observedPrevState,
-  //     event,
-  //     state: observedState,
-  //     id: observationInput.id ?? randomId(),
-  //     sessionId: agent.sessionId,
-  //     timestamp: observationInput.timestamp ?? Date.now(),
-  //     machineHash: observationInput.machine
-  //       ? getMachineHash(observationInput.machine)
-  //       : undefined,
-  //   } satisfies AgentObservation<any>;
-
-  //   agent.send({
-  //     type: 'agent.observe',
-  //     observation,
-  //   });
-
-  //   return observation;
-  // };
-  // agent.getObservations = () => agent.getSnapshot().context.observations;
-
-  // agent.addPlan = (plan) => {
-  //   agent.send({
-  //     type: 'agent.plan',
-  //     plan,
-  //   });
-  // };
-  // agent.getPlans = () => agent.getSnapshot().context.plans;
-
-  // agent.interact = ((actorRef, getInput) => {
-  //   let prevState: ObservedState | undefined = undefined;
-  //   let subscribed = true;
-
-  //   async function handleObservation(observationInput: AgentObservationInput) {
-  //     const observation = agent.addObservation(observationInput);
-
-  //     const input = getInput?.(observation);
-
-  //     if (input) {
-  //       await agentDecide(agent, {
-  //         machine: actorRef.src as AnyStateMachine,
-  //         state: observation.state,
-  //         execute: async (event) => {
-  //           actorRef.send(event);
-  //         },
-  //         ...input,
-  //       });
-  //     }
-
-  //     prevState = observationInput.state;
-  //   }
-
-  //   // Inspect system, but only observe specified actor
-  //   const sub = actorRef.system.inspect({
-  //     next: async (inspEvent) => {
-  //       if (
-  //         !subscribed ||
-  //         inspEvent.actorRef !== actorRef ||
-  //         inspEvent.type !== '@xstate.snapshot'
-  //       ) {
-  //         return;
-  //       }
-
-  //       const observationInput = {
-  //         event: inspEvent.event,
-  //         prevState,
-  //         state: inspEvent.snapshot as any,
-  //         machine: (actorRef as any).src,
-  //       } satisfies AgentObservationInput;
-
-  //       await handleObservation(observationInput);
-  //     },
-  //   });
-
-  //   // If actor already started, interact with current state
-  //   if ((actorRef as any)._processingStatus === 1) {
-  //     handleObservation({
-  //       prevState: undefined,
-  //       event: { type: '' }, // TODO: unknown events?
-  //       state: actorRef.getSnapshot(),
-  //       machine: (actorRef as any).src,
-  //     });
-  //   }
-
-  //   return {
-  //     unsubscribe: () => {
-  //       sub.unsubscribe();
-  //       subscribed = false;
-  //     },
-  //   };
-  // }) as typeof agent.interact;
-
-  // agent.observe = (actorRef) => {
-  //   let prevState: ObservedState = actorRef.getSnapshot();
-
-  //   const sub = actorRef.system.inspect({
-  //     next: async (inspEvent) => {
-  //       if (
-  //         inspEvent.actorRef !== actorRef ||
-  //         inspEvent.type !== '@xstate.snapshot'
-  //       ) {
-  //         return;
-  //       }
-
-  //       const observationInput = {
-  //         event: inspEvent.event,
-  //         prevState,
-  //         state: inspEvent.snapshot as any,
-  //         machine: (actorRef as any).src,
-  //       } satisfies AgentObservationInput;
-
-  //       prevState = observationInput.state;
-
-  //       agent.addObservation(observationInput);
-  //     },
-  //   });
-
-  //   return sub;
-  // };
-
-  // agent.types = {} as any;
-
-  // agent.wrap = (modelToWrap) =>
-  //   experimental_wrapLanguageModel({
-  //     model: modelToWrap,
-  //     middleware: createAgentMiddleware(agent),
-  //   });
-
-  // agent.model = experimental_wrapLanguageModel({
-  //   model,
-  //   middleware: createAgentMiddleware(agent),
-  // });
-
-  // agent.start();
-
-  // return agent;
 }
 
 export class Agent<

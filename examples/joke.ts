@@ -45,7 +45,7 @@ const loader = fromCallback(({ input }: { input: string }) => {
 });
 
 const agent = createAgent({
-  name: 'joke-teller',
+  id: 'joke-teller',
   model: openai('gpt-4o-mini'),
   events: {
     askForTopic: z

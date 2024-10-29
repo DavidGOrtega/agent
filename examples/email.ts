@@ -5,7 +5,7 @@ import { assign, createActor, setup } from 'xstate';
 import { fromTerminal } from './helpers/helpers';
 
 const agent = createAgent({
-  name: 'email',
+  id: 'email',
   model: openai('gpt-4o'),
   events: {
     askForClarification: z.object({

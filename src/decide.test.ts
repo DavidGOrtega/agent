@@ -28,7 +28,7 @@ test('fromDecision() makes a decision', async () => {
     doGenerate,
   });
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     model,
     events: {
       doFirst: z.object({}),
@@ -73,7 +73,7 @@ test('interacts with an actor', async () => {
     doGenerate,
   });
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     model,
     events: {
       doFirst: z.object({}),
@@ -116,7 +116,7 @@ test('interacts with an actor (late interaction)', async () => {
     doGenerate,
   });
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     model,
     events: {
       doFirst: z.object({}),

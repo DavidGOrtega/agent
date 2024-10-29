@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { shortestPathPlanner } from '../src/planners/shortestPathPlanner';
 
 const agent = createAgent({
-  name: 'die-hard-solver',
+  id: 'die-hard-solver',
   model: openai('gpt-4o'),
   events: {
     fill3: z.object({}).describe('Fill the 3-gallon jug'),

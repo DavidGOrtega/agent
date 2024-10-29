@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
 
 const agent = createAgent({
-  name: 'word',
+  id: 'word',
   model: openai('gpt-4o-mini'),
   context: {
     word: z.string().nullable().describe('The word to guess'),

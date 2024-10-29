@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
 
 const agent = createAgent({
-  name: 'tutor',
+  id: 'tutor',
   model: openai('gpt-4o-mini'),
   events: {
     teach: z.object({
@@ -19,7 +19,7 @@ const agent = createAgent({
       response: z.string().describe('The response to the human in Spanish'),
     }),
   },
-  system:
+  description:
     'You are an expert Spanish tutor. You will respond to the human in Spanish.',
 });
 

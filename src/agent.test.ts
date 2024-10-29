@@ -7,7 +7,7 @@ import { dummyResponseValues, MockLanguageModelV1 } from './mockModel';
 
 test('an agent has the expected interface', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: new MockLanguageModelV1(),
   });
@@ -31,7 +31,7 @@ test('agent.addMessage() adds to message history', () => {
   const model = new MockLanguageModelV1();
 
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model,
   });
@@ -65,7 +65,7 @@ test('agent.addMessage() adds to message history', () => {
 
 test('agent.addFeedback() adds to feedback', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -106,7 +106,7 @@ test('agent.addFeedback() adds to feedback', () => {
 
 test('agent.addObservation() adds to observations', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -132,7 +132,7 @@ test('agent.addObservation() adds to observations', () => {
 
 test('agent.addObservation() adds to observations (initial state)', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -154,7 +154,7 @@ test('agent.addObservation() adds to observations (initial state)', () => {
 
 test('agent.addObservation() adds to observations with machine hash', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -194,7 +194,7 @@ test('agent.addObservation() adds to observations with machine hash', () => {
 
 test('agent.addFeedback() adds to feedback (with observation)', () => {
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -251,7 +251,7 @@ test('agent.interact() observes machine actors (no 2nd arg)', () => {
   });
 
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -289,7 +289,7 @@ test('agent.interact() observes machine actors (no 2nd arg)', () => {
 test('You can listen for feedback events', () => {
   const fn = vi.fn();
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     events: {},
     model: {} as any,
   });
@@ -332,7 +332,7 @@ test('You can listen for plan events', async () => {
   });
 
   const agent = createAgent({
-    name: 'test',
+    id: 'test',
     model,
     events: {
       WIN: z.object({}),
