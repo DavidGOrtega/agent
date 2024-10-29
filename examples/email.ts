@@ -31,7 +31,7 @@ const machine = setup({
       replyEmail: string | null;
     },
   },
-  actors: { agent: fromDecision(agent), getFromTerminal: fromTerminal },
+  actors: { getFromTerminal: fromTerminal },
 }).createMachine({
   initial: 'checking',
   context: ({ input }) => ({
@@ -42,18 +42,6 @@ const machine = setup({
   }),
   states: {
     checking: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            email: context.email,
-            instructions: context.instructions,
-            clarifications: context.clarifications,
-          },
-          messages: agent.getMessages(),
-          goal: 'Respond to the email given the instructions and the provided clarifications. If not enough information is provided, ask for clarification. Otherwise, if you are absolutely sure that there is no ambiguous or missing information, create and submit a response email.',
-        }),
-      },
       on: {
         askForClarification: {
           actions: ({ event }) => console.log(event.questions.join('\n')),
@@ -78,17 +66,6 @@ const machine = setup({
       },
     },
     submitting: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            email: context.email,
-            instructions: context.instructions,
-            clarifications: context.clarifications,
-          },
-          goal: `Create and submit an email based on the instructions.`,
-        }),
-      },
       on: {
         submitEmail: {
           actions: assign({
@@ -109,10 +86,26 @@ const machine = setup({
   },
 });
 
-createActor(machine, {
+const actor = createActor(machine, {
   input: {
     email: 'That sounds great! When are you available?',
     instructions:
       'Tell them exactly when I am available. Address them by his full (first and last) name.',
   },
 }).start();
+
+agent.interact(actor, ({ state }) => {
+  if (state.matches('checking')) {
+    return {
+      goal: 'Respond to the email given the instructions and the provided clarifications. If not enough information is provided, ask for clarification. Otherwise, if you are absolutely sure that there is no ambiguous or missing information, create and submit a response email.',
+      context: state.context,
+    };
+  }
+
+  if (state.matches('submitting')) {
+    return {
+      goal: 'Create and submit an email based on the instructions.',
+      context: state.context,
+    };
+  }
+});
