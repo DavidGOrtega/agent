@@ -12,7 +12,7 @@ import {
 } from './types';
 import { simplePlanner } from './planners/simple';
 import { getTransitions } from './utils';
-import { CoreTool, tool } from 'ai';
+import { CoreMessage, CoreTool, tool } from 'ai';
 
 export async function agentDecide<T extends AnyAgent>(
   agent: T,
@@ -29,6 +29,7 @@ export async function agentDecide<T extends AnyAgent>(
     state,
     machine,
     model = agent.model,
+    messages,
     ...otherPlanInput
   } = resolvedOptions;
 
@@ -45,6 +46,7 @@ export async function agentDecide<T extends AnyAgent>(
       events,
       state,
       machine,
+      messages: messages as CoreMessage[], // TODO: fix UIMessage thing
       ...otherPlanInput,
     });
 
