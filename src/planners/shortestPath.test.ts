@@ -1,4 +1,4 @@
-import { createAgent } from '..';
+import { createAgent } from '../';
 import { assign, createActor, setup } from 'xstate';
 import { z } from 'zod';
 import { experimental_createShortestPathPlanner } from './shortestPath';
@@ -12,6 +12,16 @@ test.skip('should find shortest path to goal', async () => {
       doGenerate: async () => {
         return {
           ...dummyResponseValues,
+          text: JSON.stringify({
+            type: 'object',
+            properties: {
+              count: {
+                type: 'number',
+                const: 3,
+              },
+            },
+            required: ['count'],
+          }),
         };
       },
     }),

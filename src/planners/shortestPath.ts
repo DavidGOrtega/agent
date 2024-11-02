@@ -1,5 +1,4 @@
 import { generateObject } from 'ai';
-import { getToolMap } from '../decide';
 import {
   AgentPlan,
   AgentPlanInput,
@@ -89,6 +88,16 @@ export function experimental_createShortestPathPlanner<
   {
     "contextSchema": "{"type": "object", "properties": {"score": {"type": "number", "minimum": 100}}, "required": ["score"]}"
   }
+
+  3. For "fruits contain apple, orange, banana":
+  {
+    "type": "array",
+    "allOf": [
+      { "contains": { "const": "apple" } },
+      { "contains": { "const": "orange" } },
+      { "contains": { "const": "banana" } }
+    ]
+  }
       `.trim(),
         schema: z.object({
           // valueSchema: z
@@ -110,7 +119,6 @@ export function experimental_createShortestPathPlanner<
             })
             .describe('The JSON Schema representing the goal state context'),
         }),
-        mode: 'json',
       });
 
       console.log(result.object);
