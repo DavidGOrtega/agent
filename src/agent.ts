@@ -27,6 +27,7 @@ import {
   Compute,
   AgentDecisionInput,
   AgentDecideOptions,
+  AnyAgent,
 } from './types';
 import { simplePlanner } from './planners/simple';
 import { agentDecide } from './decide';
@@ -183,7 +184,7 @@ export class Agent<
   };
   public model: LanguageModel;
   public memory: AgentLongTermMemory | undefined;
-  public defaultOptions: any; // todo
+  public defaultOptions: AgentDecideOptions<AnyAgent> | undefined; // todo
 
   constructor({
     logic = agentLogic as AgentLogic<TEvents>,

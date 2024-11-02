@@ -32,18 +32,26 @@ export async function agentDecide<T extends AnyAgent>(
     ...otherPlanInput
   } = resolvedOptions;
 
-  const plan = await planner(agent, {
-    model,
-    goal,
-    events,
-    state,
-    machine,
-    ...otherPlanInput,
-  });
+  let attempts = 0;
 
-  if (plan?.nextEvent) {
-    agent.addPlan(plan);
-    await resolvedOptions.execute?.(plan.nextEvent);
+  const maxAttempts = resolvedOptions.maxAttempts ?? 2;
+
+  let plan;
+
+  while (attempts++ < maxAttempts) {
+    plan = await planner(agent, {
+      model,
+      goal,
+      events,
+      state,
+      machine,
+      ...otherPlanInput,
+    });
+
+    if (plan?.nextEvent) {
+      agent.addPlan(plan);
+      await resolvedOptions.execute?.(plan.nextEvent);
+    }
   }
 
   return plan;

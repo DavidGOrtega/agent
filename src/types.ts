@@ -63,6 +63,12 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
    * The total cost of the path to the goal state.
    */
   costFunction?: CostFunction<TEvent>;
+
+  /**
+   * The maximum number of attempts to generate a plan.
+   * Defaults to 2.
+   */
+  maxAttempts?: number;
 };
 
 export type AgentStep<TEvent extends EventObject> = {
@@ -154,6 +160,11 @@ export type AgentDecideOptions<T extends AnyAgent> = {
   execute?: (event: AnyEventObject) => Promise<void>;
   planner?: AgentPlanner<T>;
   events?: ZodEventMapping;
+  /**
+   * The maximum number of times the agent will attempt to make a decision.
+   * Defaults to 2.
+   */
+  maxAttempts?: number;
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
 export interface AgentFeedback {
