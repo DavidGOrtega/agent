@@ -127,6 +127,7 @@ agent.interact(actor, (obs) => {
     return {
       goal: 'Determine if user is asking about weather and for which location. If so, get the weather. Otherwise, respond to the user.',
       context: obs.state.context,
+      messages: agent.getMessages(),
     };
   }
 
@@ -134,6 +135,7 @@ agent.interact(actor, (obs) => {
     return {
       goal: 'Provide a natural response about the weather in ${context.location}',
       context: obs.state.context,
+      messages: agent.getMessages(),
     };
   }
 });

@@ -2,6 +2,8 @@ import { assign, setup, assertEvent, createActor } from 'xstate';
 import { z } from 'zod';
 import { createAgent, fromDecision, fromTextStream } from '../src';
 import { openai } from '@ai-sdk/openai';
+import { generateObject, generateText } from 'ai';
+import * as fs from 'fs';
 
 const events = {
   'agent.x.play': z.object({
@@ -50,6 +52,17 @@ const oAgent = createAgent({
   model: openai('gpt-4o-mini'),
   events,
   context,
+});
+
+const feedbackAgent = createAgent({
+  id: 'tic-tac-toe-expert',
+  model: openai('gpt-4o-mini'),
+  description: 'You are an expert in tic-tac-toe.',
+  events: {
+    'agent.feedback': z.object({
+      feedback: z.string(),
+    }),
+  },
 });
 
 type Player = 'x' | 'o';
@@ -236,6 +249,23 @@ const actor = createActor(ticTacToeMachine);
 
 xAgent.interact(actor, (observed) => {
   if (observed.state.matches({ playing: 'x' })) {
+    // get similar observations
+    const similarObservations = xAgent.getObservations().filter((o) => {
+      return (
+        o.prevState &&
+        JSON.stringify(o.prevState.context.board) ===
+          JSON.stringify(observed.state.context.board)
+      );
+    });
+
+    console.log('Similar:', similarObservations);
+
+    const similarFeedbacks = similarObservations.map((o) => {
+      return xAgent.getFeedback().filter((f) => f.observationId === o.id);
+    });
+
+    console.log('Feedbacks:', similarFeedbacks);
+
     return {
       goal: `You are playing a game of tic tac toe. This is the current game state. The 3x3 board is represented by a 9-element array. The first element is the top-left cell, the second element is the top-middle cell, the third element is the top-right cell, the fourth element is the middle-left cell, and so on. The value of each cell is either null, x, or o. The value of null means that the cell is empty. 
 
@@ -260,6 +290,11 @@ Execute the single best next move to try to win the game. Do not play on an exis
   }
 
   return;
+});
+
+xAgent.on('observation', (observation) => {
+  // append the observation to a jsonl file
+  fs.appendFileSync('observations.jsonl', JSON.stringify(observation) + '\n');
 });
 
 actor.start();

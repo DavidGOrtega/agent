@@ -160,6 +160,7 @@ export type AgentDecideOptions<T extends AnyAgent> = {
   execute?: (event: AnyEventObject) => Promise<void>;
   planner?: AgentPlanner<T>;
   events?: ZodEventMapping;
+  allowedEvents?: Array<EventsFromAgent<T>['type']>;
   /**
    * The maximum number of times the agent will attempt to make a decision.
    * Defaults to 2.
@@ -182,6 +183,7 @@ export interface AgentFeedback {
 export interface AgentFeedbackInput {
   goal?: string;
   observationId?: string;
+  feedback?: string;
   attributes?: Record<string, any>;
   timestamp?: number;
   reward?: number;
@@ -327,6 +329,7 @@ export type AgentMessageInput = CoreMessage & {
 
 export interface AgentObservation<TActor extends ActorRefLike> {
   id: string;
+  // TODO: goal
   prevState: SnapshotFrom<TActor> | undefined;
   event: EventFrom<TActor> | undefined;
   state: SnapshotFrom<TActor>;
@@ -472,3 +475,14 @@ export interface AgentLongTermMemory {
 }
 
 export type Compute<A extends any> = { [K in keyof A]: A[K] } & unknown;
+
+export type MaybePromise<T> = T | Promise<T>;
+
+export type EventsFromAgent<T extends AnyAgent> = T extends Agent<
+  infer _,
+  infer __,
+  infer TEvents,
+  infer ___
+>
+  ? TEvents
+  : never;

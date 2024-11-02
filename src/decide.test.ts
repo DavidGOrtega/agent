@@ -274,3 +274,51 @@ test.each([
     }
   }
 );
+
+test.each([['MOVE'], ['FORFEIT']] as const)(
+  'agent.decide() respects allowedEvents constraint (event: %s)',
+  async (allowedEventType) => {
+    const model = new MockLanguageModelV1({
+      doGenerate: async (params: LanguageModelV1CallOptions) => {
+        const keys =
+          params.mode.type === 'regular'
+            ? params.mode.tools?.map((t) => t.name)
+            : [];
+
+        return {
+          ...dummyResponseValues,
+          finishReason: 'tool-calls',
+          toolCalls: [
+            {
+              toolCallType: 'function',
+              toolCallId: 'call-1',
+              toolName: keys![0],
+              args: `{ "type": "${keys?.[0]}" }`,
+            },
+          ],
+        } as any;
+      },
+    });
+
+    const agent = createAgent({
+      id: 'test',
+      model,
+      events: {
+        MOVE: z.object({}),
+        SKIP: z.object({}),
+        FORFEIT: z.object({}),
+      },
+    });
+
+    const decision = await agent.decide({
+      goal: 'Make the best move',
+      state: {
+        value: 'playing',
+        context: {},
+      },
+      allowedEvents: [allowedEventType],
+    });
+
+    expect(decision?.nextEvent?.type).toEqual(allowedEventType);
+  }
+);

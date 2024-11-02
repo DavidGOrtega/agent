@@ -75,8 +75,8 @@ const machine = setup({
   types: {
     context: {} as {
       location: string;
-      history: string[];
       count: number;
+      result: string | null;
     },
     events: agent.types.events,
   },
@@ -90,7 +90,7 @@ const machine = setup({
   context: {
     location: '',
     count: 0,
-    history: [],
+    result: null,
   },
   states: {
     getLocation: {
@@ -111,15 +111,6 @@ const machine = setup({
     },
     decide: {
       entry: log('Deciding...'),
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          context: {
-            location: context.location,
-          },
-          goal: `Decide what to do based on the given location, which may or may not be a location`,
-        }),
-      },
       on: {
         'agent.getWeather': {
           actions: log(({ event }) => event),
@@ -138,6 +129,7 @@ const machine = setup({
             log(({ event }) => event.output),
             assign({
               count: ({ context }) => context.count + 1,
+              result: ({ event }) => event.output,
             }),
           ],
           target: 'reportWeather',
@@ -145,13 +137,6 @@ const machine = setup({
       },
     },
     reportWeather: {
-      invoke: {
-        src: 'agent',
-        input: ({ context }) => ({
-          goal: 'Report the weather', // TODO
-          context,
-        }),
-      },
       on: {
         'agent.reportWeather': {
           actions: log(({ event }) => event),
@@ -169,7 +154,22 @@ const machine = setup({
 });
 
 const actor = createActor(machine);
-actor.subscribe((s) => {
-  console.log(s.value);
-});
 actor.start();
+
+agent.interact(actor, (obs) => {
+  if (obs.state.matches('decide')) {
+    return {
+      goal: `Decide what to do based on the given location, which may or may not be a location`,
+      context: {
+        location: obs.state.context.location,
+      },
+    };
+  }
+
+  if (obs.state.matches('reportWeather')) {
+    return {
+      goal: `Report the weather for the given location`,
+      context: obs.state.context,
+    };
+  }
+});

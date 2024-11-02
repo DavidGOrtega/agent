@@ -25,6 +25,7 @@ export async function agentDecide<T extends AnyAgent>(
   const {
     planner = simplePlanner as AgentPlanner<any>,
     goal,
+    allowedEvents,
     events = agent.events,
     state,
     machine,
@@ -32,6 +33,14 @@ export async function agentDecide<T extends AnyAgent>(
     messages,
     ...otherPlanInput
   } = resolvedOptions;
+
+  const filteredEventSchemas = allowedEvents
+    ? Object.fromEntries(
+        Object.entries(events).filter(([key]) => {
+          return allowedEvents.includes(key);
+        })
+      )
+    : events;
 
   let attempts = 0;
 
@@ -43,7 +52,7 @@ export async function agentDecide<T extends AnyAgent>(
     plan = await planner(agent, {
       model,
       goal,
-      events,
+      events: filteredEventSchemas,
       state,
       machine,
       messages: messages as CoreMessage[], // TODO: fix UIMessage thing

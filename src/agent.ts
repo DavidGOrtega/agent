@@ -147,7 +147,7 @@ export function createAgent<
    */
   logic?: AgentLogic<TEvents>;
   model: LanguageModel;
-} & GenerateTextOptions): Agent<TContextSchema, TEventSchemas> {
+}): Agent<TContextSchema, TEventSchemas> {
   return new Agent({
     id,
     context,
@@ -223,6 +223,13 @@ export class Agent<
    */
   public onMessage(fn: (message: AgentMessage) => void) {
     return this.on('message', (ev) => fn(ev.message));
+  }
+
+  /**
+   * Called whenever the agent (LLM assistant) receives some feedback.
+   */
+  public onFeedback(fn: (feedback: AgentFeedback) => void) {
+    return this.on('feedback', (ev) => fn(ev.feedback));
   }
 
   /**
@@ -361,13 +368,13 @@ export class Agent<
     actorRef: TActor,
     getInput: (
       observation: AgentObservation<TActor>
-    ) => AgentDecisionInput | undefined
+    ) => AgentDecisionInput | void
   ): Subscription;
   public interact<TActor extends ActorRefLike>(
     actorRef: TActor,
     getInput?: (
       observation: AgentObservation<TActor>
-    ) => AgentDecisionInput | undefined
+    ) => AgentDecisionInput | void
   ): Subscription {
     const actorRefCheck = isActorRef(actorRef) && actorRef.src;
     const machine = isMachineActor(actorRef) ? actorRef.src : undefined;
@@ -425,7 +432,7 @@ export class Agent<
     if ((actorRef as any)._processingStatus === 1) {
       handleObservation({
         prevState: undefined,
-        event: { type: '' }, // TODO: unknown events?
+        event: undefined,
         state: actorRef.getSnapshot(),
         machine: (actorRef as any).src,
       });
