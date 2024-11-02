@@ -2,7 +2,7 @@ import { createAgent } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { experimental_createShortestPathPlanner } from '../src/planners/shortestPath';
+import { experimental_createShortestPathStrategy } from '../src/strategies/shortestPath';
 
 const agent = createAgent({
   id: 'die-hard-solver',
@@ -106,7 +106,7 @@ async function main() {
       machine: waterJugMachine,
       goal: 'Get exactly 4 gallons of water in the 5-gallon jug',
       state: waterJugActor.getSnapshot(),
-      planner: experimental_createShortestPathPlanner(),
+      strategy: experimental_createShortestPathStrategy(),
     });
 
     console.log(decision?.nextEvent);

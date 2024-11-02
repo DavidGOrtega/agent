@@ -1,12 +1,17 @@
 import { CoreMessage, generateText } from 'ai';
-import { AgentPlan, AgentPlanInput, PromptTemplate, AnyAgent } from '../types';
+import {
+  AgentDecision,
+  AgentDecideInput,
+  PromptTemplate,
+  AnyAgent,
+} from '../types';
 import { randomId } from '../utils';
 import { getNextSnapshot } from 'xstate';
 import { defaultTextTemplate } from '../templates/defaultText';
 import { getMessages } from '../text';
 import { getToolMap } from '../decide';
 
-const simplePlannerPromptTemplate: PromptTemplate<any> = (data) => {
+const simpleStrategyPromptTemplate: PromptTemplate<any> = (data) => {
   return `
 ${defaultTextTemplate(data)}
 
@@ -14,10 +19,10 @@ Make at most one tool call to achieve the above goal. If the goal cannot be achi
   `.trim();
 };
 
-export async function simplePlanner<T extends AnyAgent>(
+async function simpleStrategy<T extends AnyAgent>(
   agent: T,
-  input: AgentPlanInput<any>
-): Promise<AgentPlan<any> | undefined> {
+  input: AgentDecideInput<any>
+): Promise<AgentDecision<any> | undefined> {
   const toolMap = getToolMap(agent, input);
 
   if (!toolMap) {
@@ -27,7 +32,7 @@ export async function simplePlanner<T extends AnyAgent>(
 
   // Create a prompt with the given context and goal.
   // The template is used to ensure that a single tool call at most is made.
-  const prompt = simplePlannerPromptTemplate({
+  const prompt = simpleStrategyPromptTemplate({
     context: input.state.context,
     goal: input.goal,
   });
@@ -39,7 +44,7 @@ export async function simplePlanner<T extends AnyAgent>(
   const {
     state,
     machine,
-    previousPlan,
+    prevDecision,
     events,
     goal,
     model: _,
@@ -81,7 +86,7 @@ export async function simplePlanner<T extends AnyAgent>(
   }
 
   return {
-    planner: 'simple',
+    strategy: 'simple',
     goal: input.goal,
     goalState: input.state,
     nextEvent: singleResult.result,
@@ -102,4 +107,8 @@ export async function simplePlanner<T extends AnyAgent>(
       },
     ],
   };
+}
+
+export function createSimpleStrategy<T extends AnyAgent>() {
+  return simpleStrategy;
 }

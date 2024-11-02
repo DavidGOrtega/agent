@@ -11,7 +11,7 @@ import { ZodContextMapping, ZodEventMapping } from './schemas';
 import {
   AgentLogic,
   AgentMessage,
-  AgentPlanner,
+  AgentStrategy,
   EventsFromZodEventMapping,
   GenerateTextOptions,
   AgentLongTermMemory,
@@ -23,13 +23,13 @@ import {
   AgentFeedback,
   AgentMessageInput,
   AgentFeedbackInput,
-  AgentPlan,
+  AgentDecision,
   Compute,
   AgentDecisionInput,
   AgentDecideOptions,
   AnyAgent,
 } from './types';
-import { simplePlanner } from './planners/simple';
+import { createSimpleStrategy } from './strategies/simple';
 import { agentDecide } from './decide';
 import { getMachineHash, isActorRef, isMachineActor, randomId } from './utils';
 import {
@@ -69,12 +69,11 @@ export const agentLogic: AgentLogic<AnyEventObject> = fromTransition(
         });
         break;
       }
-      case 'agent.plan': {
-        state.plans.push(event.plan);
+      case 'agent.decision': {
+        state.decisions.push(event.decision);
         emit({
-          type: 'plan',
-          // @ts-ignore TODO: fix types in XState
-          plan: event.plan,
+          type: 'decision',
+          decision: event.decision,
         });
         break;
       }
@@ -91,7 +90,7 @@ export const agentLogic: AgentLogic<AnyEventObject> = fromTransition(
       feedback: [],
       messages: [],
       observations: [],
-      plans: [],
+      decisions: [],
     } as AgentMemoryContext)
 );
 
@@ -106,7 +105,7 @@ export function createAgent<
   model,
   events,
   context,
-  planner = simplePlanner as AgentPlanner<Agent<TContextSchema, TEventSchemas>>,
+  strategy = createSimpleStrategy(),
   logic = agentLogic as AgentLogic<TEvents>,
 }: {
   /**
@@ -134,7 +133,7 @@ export function createAgent<
    */
   events: TEventSchemas;
   context?: TContextSchema;
-  planner?: AgentPlanner<Agent<TContextSchema, TEventSchemas>>;
+  strategy?: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
   stringify?: typeof JSON.stringify;
   /**
    * A function that retrieves the agent's long term memory
@@ -153,7 +152,7 @@ export function createAgent<
     context,
     events,
     description,
-    planner,
+    strategy: strategy,
     model,
     logic,
   }) as any;
@@ -177,7 +176,7 @@ export class Agent<
   public description?: string;
   public events: TEventSchemas;
   public context?: TContextSchema;
-  public planner?: AgentPlanner<Agent<TContextSchema, TEventSchemas>>;
+  public strategy?: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
   public types: {
     events: TEvents;
     context: Compute<TContext>;
@@ -194,7 +193,7 @@ export class Agent<
     model,
     events,
     context,
-    planner = simplePlanner,
+    strategy = createSimpleStrategy(),
   }: {
     logic: AgentLogic<TEvents>;
     id?: string;
@@ -203,7 +202,7 @@ export class Agent<
     model: GenerateTextOptions['model'];
     events: TEventSchemas;
     context?: TContextSchema;
-    planner?: AgentPlanner<Agent<TContextSchema, TEventSchemas>>;
+    strategy?: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
   }) {
     super(logic);
     this.model = model;
@@ -212,7 +211,7 @@ export class Agent<
     this.description = description;
     this.events = events;
     this.context = context;
-    this.planner = planner;
+    this.strategy = strategy;
     this.types = {} as any;
 
     this.start();
@@ -307,17 +306,17 @@ export class Agent<
     return this.getSnapshot().context.observations;
   }
 
-  public addPlan(plan: AgentPlan<TEvents>) {
+  public addDecision(decision: AgentDecision<TEvents>) {
     this.send({
-      type: 'agent.plan',
-      plan,
+      type: 'agent.decision',
+      decision,
     });
   }
   /**
    * Retrieves strategies from the agent's short-term (local) memory.
    */
-  public getPlans() {
-    return this.getSnapshot().context.plans;
+  public getDecisions() {
+    return this.getSnapshot().context.decisions;
   }
 
   /**

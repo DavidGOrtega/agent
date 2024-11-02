@@ -4,26 +4,25 @@ import {
   AgentDecideOptions,
   AgentDecisionLogic,
   AgentDecisionInput,
-  AgentPlanner,
-  AgentPlan,
+  AgentDecision,
   EventsFromZodEventMapping,
-  AgentPlanInput,
+  AgentDecideInput,
   TransitionData,
 } from './types';
-import { simplePlanner } from './planners/simple';
+import { createSimpleStrategy } from './strategies/simple';
 import { getTransitions } from './utils';
 import { CoreMessage, CoreTool, tool } from 'ai';
 
 export async function agentDecide<T extends AnyAgent>(
   agent: T,
   options: AgentDecideOptions<T>
-): Promise<AgentPlan<EventsFromZodEventMapping<T['events']>> | undefined> {
+): Promise<AgentDecision<EventsFromZodEventMapping<T['events']>> | undefined> {
   const resolvedOptions = {
     ...agent.defaultOptions,
     ...options,
   };
   const {
-    planner = simplePlanner as AgentPlanner<any>,
+    strategy = createSimpleStrategy(),
     goal,
     allowedEvents,
     events = agent.events,
@@ -31,7 +30,7 @@ export async function agentDecide<T extends AnyAgent>(
     machine,
     model = agent.model,
     messages,
-    ...otherPlanInput
+    ...otherDecideInput
   } = resolvedOptions;
 
   const filteredEventSchemas = allowedEvents
@@ -46,26 +45,26 @@ export async function agentDecide<T extends AnyAgent>(
 
   const maxAttempts = resolvedOptions.maxAttempts ?? 2;
 
-  let plan;
+  let decision: AgentDecision<any> | undefined;
 
   while (attempts++ < maxAttempts) {
-    plan = await planner(agent, {
+    decision = await strategy(agent, {
       model,
       goal,
       events: filteredEventSchemas,
       state,
       machine,
       messages: messages as CoreMessage[], // TODO: fix UIMessage thing
-      ...otherPlanInput,
+      ...otherDecideInput,
     });
 
-    if (plan?.nextEvent) {
-      agent.addPlan(plan);
-      await resolvedOptions.execute?.(plan.nextEvent);
+    if (decision?.nextEvent) {
+      agent.addDecision(decision);
+      await resolvedOptions.execute?.(decision.nextEvent);
     }
   }
 
-  return plan;
+  return decision;
 }
 
 export function fromDecision(
@@ -89,7 +88,7 @@ export function fromDecision(
       context: resolvedInput.context,
     };
 
-    const plan = await agentDecide(agent, {
+    const decision = await agentDecide(agent, {
       machine: (parentRef as AnyActor).logic,
       state,
       execute: async (event) => {
@@ -98,13 +97,13 @@ export function fromDecision(
       ...resolvedInput,
     });
 
-    return plan;
+    return decision;
   }) as AgentDecisionLogic<any>;
 }
 
 export function getToolMap<T extends AnyAgent>(
   _agent: T,
-  input: AgentPlanInput<any>
+  input: AgentDecideInput<any>
 ): Record<string, CoreTool<any, any>> | undefined {
   // Get all of the possible next transitions
   const transitions: TransitionData[] = input.machine

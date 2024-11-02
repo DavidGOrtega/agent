@@ -17,12 +17,12 @@ test('an agent has the expected interface', () => {
   expect(agent.addMessage).toBeDefined();
   expect(agent.addObservation).toBeDefined();
   expect(agent.addFeedback).toBeDefined();
-  expect(agent.addPlan).toBeDefined();
+  expect(agent.addDecision).toBeDefined();
 
   expect(agent.getMessages).toBeDefined();
   expect(agent.getObservations).toBeDefined();
   expect(agent.getFeedback).toBeDefined();
-  expect(agent.getPlans).toBeDefined();
+  expect(agent.getDecisions).toBeDefined();
 
   expect(agent.interact).toBeDefined();
 });
@@ -339,7 +339,7 @@ test('You can listen for plan events', async () => {
     },
   });
 
-  agent.on('plan', fn);
+  agent.on('decision', fn);
 
   await agent.decide({
     goal: 'Win the game',
@@ -364,7 +364,7 @@ test('You can listen for plan events', async () => {
 
   expect(fn).toHaveBeenCalledWith(
     expect.objectContaining({
-      plan: expect.objectContaining({
+      decision: expect.objectContaining({
         nextEvent: {
           type: 'WIN',
         },
@@ -441,10 +441,10 @@ test('agent.getPlans() returns plans from context', () => {
     id: 'test',
     events: {},
     model: {} as any,
-    planner: async (agent) => {
+    strategy: async (agent) => {
       return {
         episodeId: agent.episodeId,
-        planner: 'test-planner',
+        strategy: 'test-strategy',
         goal: '',
         goalState: undefined,
         paths: [
@@ -459,7 +459,7 @@ test('agent.getPlans() returns plans from context', () => {
     },
   });
 
-  const plans = agent.getPlans();
+  const plans = agent.getDecisions();
 
   expect(plans).toBeDefined();
   expect(Array.isArray(plans)).toBe(true);

@@ -1,8 +1,8 @@
 import { generateObject } from 'ai';
 import {
-  AgentPlan,
-  AgentPlanInput,
-  AgentPlanner,
+  AgentDecision,
+  AgentDecideInput,
+  AgentStrategy,
   AgentStep,
   AnyAgent,
   CostFunction,
@@ -36,30 +36,30 @@ function trimSteps(steps: AgentStep<any>[], currentState: ObservedState) {
   return steps.slice(index + 1, steps.length);
 }
 
-export function experimental_createShortestPathPlanner<
+export function experimental_createShortestPathStrategy<
   T extends AnyAgent
->(): AgentPlanner<T> {
-  return async function shortestPathPlanner<T extends AnyAgent>(
+>(): AgentStrategy<T> {
+  return async function shortestPathStrategy<T extends AnyAgent>(
     agent: T,
-    input: AgentPlanInput<any>
-  ): Promise<AgentPlan<any> | undefined> {
+    input: AgentDecideInput<any>
+  ): Promise<AgentDecision<any> | undefined> {
     const costFunction: CostFunction<any> =
       input.costFunction ?? ((path) => path.weight ?? Infinity);
-    const existingPlan = agent
-      .getPlans()
-      .find((p) => p.planner === 'shortestPath' && p.goal === input.goal);
+    const existingDecision = agent
+      .getDecisions()
+      .find((p) => p.strategy === 'shortestPath' && p.goal === input.goal);
 
-    let paths = existingPlan?.paths;
+    let paths = existingDecision?.paths;
 
-    if (existingPlan) {
-      console.log('Existing plan found');
+    if (existingDecision) {
+      console.log('Existing decision found');
     }
 
-    if (!input.machine && !existingPlan) {
+    if (!input.machine && !existingDecision) {
       return;
     }
 
-    if (input.machine && !existingPlan) {
+    if (input.machine && !existingDecision) {
       const contextSchema = zodToJsonSchema(z.object(agent.context));
       const result = await generateObject({
         model: agent.model,
@@ -165,7 +165,7 @@ export function experimental_createShortestPathPlanner<
     const nextStep = leastWeightPath?.steps[0];
 
     return {
-      planner: 'shortestPath',
+      strategy: 'shortestPath',
       episodeId: agent.episodeId,
       goal: input.goal,
       goalState: paths[0]?.state,

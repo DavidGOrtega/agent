@@ -31,7 +31,7 @@ export type CostFunction<TEvent extends EventObject> = (
   path: AgentPath<TEvent>
 ) => number;
 
-export type AgentPlanInput<TEvent extends EventObject> = Omit<
+export type AgentDecideInput<TEvent extends EventObject> = Omit<
   AgentGenerateTextOptions,
   'prompt' | 'tools'
 > & {
@@ -41,7 +41,7 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
   state: ObservedState;
   /**
    * The goal for the agent to accomplish.
-   * The agent will create a plan based on this goal.
+   * The agent will make a decision based on this goal.
    */
   goal: string;
   /**
@@ -55,9 +55,9 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
    */
   machine?: AnyStateMachine;
   /**
-   * The previous plan.
+   * The previous decision made by the agent.
    */
-  previousPlan?: AgentPlan<TEvent>;
+  prevDecision?: AgentDecision<TEvent>;
 
   /**
    * The total cost of the path to the goal state.
@@ -65,7 +65,7 @@ export type AgentPlanInput<TEvent extends EventObject> = Omit<
   costFunction?: CostFunction<TEvent>;
 
   /**
-   * The maximum number of attempts to generate a plan.
+   * The maximum number of attempts to make a decision.
    * Defaults to 2.
    */
   maxAttempts?: number;
@@ -86,14 +86,14 @@ export type AgentPath<TEvent extends EventObject> = {
   weight?: number;
 };
 
-export type AgentPlan<TEvent extends EventObject> = {
+export type AgentDecision<TEvent extends EventObject> = {
   /**
-   * The planner used to generate the plan
+   * The strategy used to generate the decision
    */
-  planner: string;
+  strategy: string;
   goal: string;
   /**
-   * The ending state of the plan.
+   * The ending state of the decision.
    */
   goalState: ObservedState | undefined;
   /**
@@ -144,13 +144,13 @@ export type PromptTemplate<TEvents extends EventObject> = (data: {
   observations?: AgentObservation<any>[]; // TODO
   feedback?: AgentFeedback[];
   messages?: AgentMessage[];
-  plans?: AgentPlan<TEvents>[];
+  decisions?: AgentDecision<TEvents>[];
 }) => string;
 
-export type AgentPlanner<T extends AnyAgent> = (
+export type AgentStrategy<T extends AnyAgent> = (
   agent: T,
-  input: AgentPlanInput<T['types']['events']>
-) => Promise<AgentPlan<T['types']['events']> | undefined>;
+  input: AgentDecideInput<T['types']['events']>
+) => Promise<AgentDecision<T['types']['events']> | undefined>;
 
 export type AgentDecideOptions<T extends AnyAgent> = {
   goal: string;
@@ -158,7 +158,7 @@ export type AgentDecideOptions<T extends AnyAgent> = {
   state: ObservedState;
   machine?: AnyStateMachine;
   execute?: (event: AnyEventObject) => Promise<void>;
-  planner?: AgentPlanner<T>;
+  strategy?: AgentStrategy<T>;
   events?: ZodEventMapping;
   allowedEvents?: Array<EventsFromAgent<T>['type']>;
   /**
@@ -354,7 +354,7 @@ export type AgentDecisionInput = {
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
 export type AgentDecisionLogic<TEvents extends EventObject> = PromiseActorLogic<
-  AgentPlan<TEvents> | undefined,
+  AgentDecision<TEvents> | undefined,
   AgentDecisionInput | string
 >;
 
@@ -372,8 +372,8 @@ export type AgentEmitted<TEvents extends EventObject> =
       message: AgentMessage;
     }
   | {
-      type: 'plan';
-      plan: AgentPlan<TEvents>;
+      type: 'decision';
+      decision: AgentDecision<TEvents>;
     };
 
 export type AgentLogic<TEvents extends EventObject> = ActorLogic<
@@ -391,8 +391,8 @@ export type AgentLogic<TEvents extends EventObject> = ActorLogic<
       message: AgentMessage;
     }
   | {
-      type: 'agent.plan';
-      plan: AgentPlan<TEvents>;
+      type: 'agent.decision';
+      decision: AgentDecision<TEvents>;
     },
   any, // TODO: input
   any,
@@ -456,7 +456,7 @@ export type ObservedStateFrom<TActor extends ActorRefLike> = Pick<
 export type AgentMemoryContext = {
   observations: AgentObservation<any>[]; // TODO
   messages: AgentMessage[];
-  plans: AgentPlan<any>[];
+  decisions: AgentDecision<any>[];
   feedback: AgentFeedback[];
 };
 

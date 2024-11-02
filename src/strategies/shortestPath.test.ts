@@ -1,7 +1,7 @@
-import { createAgent } from '../';
+import { createAgent } from '..';
 import { assign, createActor, setup } from 'xstate';
 import { z } from 'zod';
-import { experimental_createShortestPathPlanner } from './shortestPath';
+import { experimental_createShortestPathStrategy } from './shortestPath';
 import { test, expect } from 'vitest';
 import { dummyResponseValues, MockLanguageModelV1 } from '../mockModel';
 
@@ -87,7 +87,7 @@ test.skip('should find shortest path to goal', async () => {
     }),
     goal: 'Get the counter to exactly 3',
     state: counterActor.getSnapshot(),
-    planner: experimental_createShortestPathPlanner(),
+    strategy: experimental_createShortestPathStrategy(),
   });
 
   expect(decision?.nextEvent?.type).toBe('increment');
