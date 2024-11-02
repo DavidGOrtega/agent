@@ -27,6 +27,9 @@ importers:
         specifier: ^3.23.5
         version: 3.23.5(zod@3.23.8)
     devDependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^0.0.54
+        version: 0.0.54(zod@3.23.8)
       '@ai-sdk/openai':
         specifier: ^0.0.40
         version: 0.0.40(zod@3.23.8)
@@ -83,6 +86,12 @@ importers:
         version: 3.23.8
 
 packages:
+
+  '@ai-sdk/anthropic@0.0.54':
+    resolution: {integrity: sha512-N2Ol6Tp1VvUOSDcEOmlW6qwaPDffm7kocn5KoDUaTGtIj4XQyQ9uBkw0l9DkZBq6/jvmgIkK6zxL++t5+i80Ow==, tarball: https://registry.npmjs.org/@ai-sdk/anthropic/-/anthropic-0.0.54.tgz}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
 
   '@ai-sdk/openai@0.0.40':
     resolution: {integrity: sha512-9Iq1UaBHA5ZzNv6j3govuKGXrbrjuWvZIgWNJv4xzXlDMHu9P9hnqlBr/Aiay54WwCuTVNhTzAUTfFgnTs2kbQ==, tarball: https://registry.npmjs.org/@ai-sdk/openai/-/openai-0.0.40.tgz}
@@ -2284,6 +2293,12 @@ packages:
     resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==, tarball: https://registry.npmjs.org/zod/-/zod-3.23.8.tgz}
 
 snapshots:
+
+  '@ai-sdk/anthropic@0.0.54(zod@3.23.8)':
+    dependencies:
+      '@ai-sdk/provider': 0.0.26
+      '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
+      zod: 3.23.8
 
   '@ai-sdk/openai@0.0.40(zod@3.23.8)':
     dependencies:
