@@ -16,7 +16,7 @@ import { CoreTool, tool } from 'ai';
 
 export async function agentDecide<T extends AnyAgent>(
   agent: T,
-  options: AgentDecideOptions
+  options: AgentDecideOptions<T>
 ): Promise<AgentPlan<EventsFromZodEventMapping<T['events']>> | undefined> {
   const resolvedOptions = {
     ...agent.defaultOptions,

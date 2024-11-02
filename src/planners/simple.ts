@@ -1,14 +1,7 @@
-import { CoreMessage, type CoreTool, generateText, tool } from 'ai';
-import {
-  AgentPlan,
-  AgentPlanInput,
-  ObservedState,
-  PromptTemplate,
-  TransitionData,
-  AnyAgent,
-} from '../types';
-import { getAllTransitions, randomId } from '../utils';
-import { AnyStateMachine, getNextSnapshot } from 'xstate';
+import { CoreMessage, generateText } from 'ai';
+import { AgentPlan, AgentPlanInput, PromptTemplate, AnyAgent } from '../types';
+import { randomId } from '../utils';
+import { getNextSnapshot } from 'xstate';
 import { defaultTextTemplate } from '../templates/defaultText';
 import { getMessages } from '../text';
 import { getToolMap } from '../decide';

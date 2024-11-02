@@ -32,7 +32,7 @@ export type CostFunction<TEvent extends EventObject> = (
 ) => number;
 
 export type AgentPlanInput<TEvent extends EventObject> = Omit<
-  GenerateTextOptions,
+  AgentGenerateTextOptions,
   'prompt' | 'tools'
 > & {
   /**

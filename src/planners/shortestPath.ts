@@ -2,6 +2,7 @@ import { generateObject } from 'ai';
 import {
   AgentPlan,
   AgentPlanInput,
+  AgentPlanner,
   AgentStep,
   AnyAgent,
   CostFunction,
@@ -12,7 +13,6 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import Ajv from 'ajv';
 import { AnyMachineSnapshot } from 'xstate';
-import { AgentPlanner } from '../../dist';
 
 const ajv = new Ajv();
 
