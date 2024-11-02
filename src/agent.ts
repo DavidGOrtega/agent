@@ -28,9 +28,9 @@ import {
   AgentDecisionInput,
   AgentDecideOptions,
 } from './types';
-import { simplePlanner } from './planners/simplePlanner';
+import { simplePlanner } from './planners/simple';
 import { agentDecide } from './decide';
-import { getMachineHash, isActorRef, randomId } from './utils';
+import { getMachineHash, isActorRef, isMachineActor, randomId } from './utils';
 import {
   experimental_wrapLanguageModel,
   LanguageModel,
@@ -77,8 +77,11 @@ export const agentLogic: AgentLogic<AnyEventObject> = fromTransition(
         });
         break;
       }
-      default:
+      default: {
+        // unrecognized
+        console.warn('Unrecognized event', event);
         break;
+      }
     }
     return state;
   },
@@ -365,7 +368,8 @@ export class Agent<
       observation: AgentObservation<TActor>
     ) => AgentDecisionInput | undefined
   ): Subscription {
-    const actorRefCheck = isActorRef(actorRef);
+    const actorRefCheck = isActorRef(actorRef) && actorRef.src;
+    const machine = isMachineActor(actorRef) ? actorRef.src : undefined;
 
     let prevState: ObservedState | undefined = undefined;
     let subscribed = true;
@@ -378,16 +382,15 @@ export class Agent<
       const input = getInput?.(observation);
 
       if (input) {
-        await agentDecide(agent, {
-          machine: actorRefCheck
-            ? (actorRef.src as AnyStateMachine)
-            : undefined,
+        const res = await agentDecide(agent, {
+          machine,
           state: observation.state,
-          execute: async (event) => {
-            actorRef.send(event);
-          },
           ...input,
         });
+
+        if (res?.nextEvent) {
+          actorRef.send(res.nextEvent);
+        }
       }
 
       prevState = observationInput.state;
@@ -481,7 +484,7 @@ export class Agent<
    * - The `machine` (e.g. a state machine) that specifies what can happen next
    * - Additional `context`
    */
-  public decide(opts: AgentDecideOptions) {
+  public decide(opts: AgentDecideOptions<this>) {
     return agentDecide(this, opts);
   }
 }

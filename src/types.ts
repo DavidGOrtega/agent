@@ -146,13 +146,13 @@ export type AgentPlanner<T extends AnyAgent> = (
   input: AgentPlanInput<T['types']['events']>
 ) => Promise<AgentPlan<T['types']['events']> | undefined>;
 
-export type AgentDecideOptions = {
+export type AgentDecideOptions<T extends AnyAgent> = {
   goal: string;
   model?: LanguageModel;
   state: ObservedState;
   machine?: AnyStateMachine;
   execute?: (event: AnyEventObject) => Promise<void>;
-  planner?: AgentPlanner<any>;
+  planner?: AgentPlanner<T>;
   events?: ZodEventMapping;
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
@@ -162,7 +162,6 @@ export interface AgentFeedback {
   /**
    * The message correlation that the feedback is relevant for
    */
-  correlationId?: string;
   attributes: Record<string, any>;
   reward: number;
   timestamp: number;
@@ -172,7 +171,6 @@ export interface AgentFeedback {
 export interface AgentFeedbackInput {
   goal?: string;
   observationId?: string;
-  correlationId?: string;
   attributes?: Record<string, any>;
   timestamp?: number;
   reward?: number;
@@ -313,8 +311,6 @@ export type AgentMessageInput = CoreMessage & {
    * which message this message is responding to, if any.
    */
   responseId?: string;
-  correlationId?: string;
-  parentCorrelationId?: string;
   result?: GenerateTextResult<any>;
 };
 
@@ -402,7 +398,7 @@ export type ContextFromZodContextMapping<
   [K in keyof TContextSchema & string]: TypeOf<TContextSchema[K]>;
 };
 
-export type AnyAgent = Agent<any, any>;
+export type AnyAgent = Agent<any, any, any, any>;
 
 export type FromAgent<T> = T | ((agent: AnyAgent) => T | Promise<T>);
 

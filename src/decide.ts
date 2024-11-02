@@ -10,7 +10,7 @@ import {
   AgentPlanInput,
   TransitionData,
 } from './types';
-import { simplePlanner } from './planners/simplePlanner';
+import { simplePlanner } from './planners/simple';
 import { getTransitions } from './utils';
 import { CoreTool, tool } from 'ai';
 

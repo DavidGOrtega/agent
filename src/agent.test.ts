@@ -393,3 +393,143 @@ test('agent.types provides context and event types', () => {
   // @ts-expect-error
   agent.types.context satisfies { score: string };
 });
+
+test('It allows unrecognized events', () => {
+  const agent = createAgent({
+    model: {} as any,
+    events: {},
+    context: {},
+  });
+
+  expect(() => {
+    agent.send({
+      // @ts-expect-error
+      type: 'unrecognized',
+    });
+  }).not.toThrow();
+});
+
+test('You can listen for message events', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  agent.onMessage(fn);
+
+  const message = {
+    role: 'user' as const,
+    content: [{ type: 'text' as const, text: 'test message' }],
+  };
+
+  agent.addMessage(message);
+
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      role: 'user',
+      content: [{ type: 'text', text: 'test message' }],
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+});
+
+test('agent.getPlans() returns plans from context', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+    planner: async (agent) => {
+      return {
+        episodeId: agent.episodeId,
+        planner: 'test-planner',
+        goal: '',
+        goalState: undefined,
+        paths: [
+          {
+            state: undefined,
+            steps: [],
+          },
+        ],
+        nextEvent: undefined,
+        timestamp: Date.now(),
+      };
+    },
+  });
+
+  const plans = agent.getPlans();
+
+  expect(plans).toBeDefined();
+  expect(Array.isArray(plans)).toBe(true);
+});
+
+test('Event listeners can be unsubscribed', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const subscription = agent.on('message', fn);
+
+  agent.addMessage({
+    role: 'user',
+    content: [{ type: 'text', text: 'first message' }],
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1);
+
+  subscription.unsubscribe();
+
+  agent.addMessage({
+    role: 'user',
+    content: [{ type: 'text', text: 'second message' }],
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1); // Still only called once
+});
+
+test('agent.observe() adds observations from actor snapshots', () => {
+  const machine = createMachine({
+    initial: 'idle',
+    states: {
+      idle: {
+        on: { START: 'running' },
+      },
+      running: {},
+    },
+  });
+
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const actor = createActor(machine);
+  const subscription = agent.observe(actor);
+
+  actor.start();
+  actor.send({ type: 'START' });
+
+  expect(agent.getObservations()).toContainEqual(
+    expect.objectContaining({
+      state: expect.objectContaining({ value: 'idle' }),
+      machineHash: expect.any(String),
+    })
+  );
+
+  expect(agent.getObservations()).toContainEqual(
+    expect.objectContaining({
+      prevState: expect.objectContaining({ value: 'idle' }),
+      event: { type: 'START' },
+      state: expect.objectContaining({ value: 'running' }),
+      machineHash: expect.any(String),
+    })
+  );
+
+  subscription.unsubscribe();
+});

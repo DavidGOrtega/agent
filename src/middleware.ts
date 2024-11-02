@@ -17,15 +17,11 @@ export function createAgentMiddleware(agent: AnyAgent) {
     wrapGenerate: async ({ doGenerate, params }) => {
       const id = randomId();
 
-      params.prompt.forEach((p) => {
+      params.prompt.forEach((message) => {
         agent.addMessage({
           id,
-          ...p,
+          ...message,
           timestamp: Date.now(),
-          correlationId: params.providerMetadata
-            ?.correlationId as unknown as string,
-          parentCorrelationId: params.providerMetadata
-            ?.parentCorrelationId as unknown as string,
         });
       });
 
@@ -43,10 +39,6 @@ export function createAgentMiddleware(agent: AnyAgent) {
           id,
           ...message,
           timestamp: Date.now(),
-          correlationId: params.providerMetadata
-            ?.correlationId as unknown as string,
-          parentCorrelationId: params.providerMetadata
-            ?.parentCorrelationId as unknown as string,
         });
       });
 
@@ -85,10 +77,6 @@ export function createAgentMiddleware(agent: AnyAgent) {
             role: 'assistant',
             content,
             responseId: id,
-            correlationId: params.providerMetadata
-              ?.correlationId as unknown as string,
-            parentCorrelationId: params.providerMetadata
-              ?.parentCorrelationId as unknown as string,
           });
         },
       });

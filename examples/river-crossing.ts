@@ -2,7 +2,7 @@ import { createAgent } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { shortestPathPlanner } from '../src/planners/shortestPathPlanner';
+import { shortestPathPlanner } from '../src/planners/shortestPath';
 
 const agent = createAgent({
   id: 'river-crossing-solver',

@@ -103,3 +103,14 @@ export function getTransitions(
   });
   return getAllTransitions(resolvedState);
 }
+
+export function isMachineActor(
+  actor: ActorRefLike
+): actor is typeof actor & { src: AnyStateMachine } {
+  return (
+    'src' in actor &&
+    typeof actor.src === 'object' &&
+    actor.src !== null &&
+    'definition' in actor.src
+  );
+}
