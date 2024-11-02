@@ -1,5 +1,17 @@
 # @statelyai/agent
 
+## 2.0.0-next.1
+
+### Minor Changes
+
+- [`6a9861d`](https://github.com/statelyai/agent/commit/6a9861d959ce295114f53c95c5bdaa097348bacb) Thanks [@davidkpiano](https://github.com/davidkpiano)! - You can specify `maxAttempts` in `agent.decide({ maxAttempts: 5 })`. This will allow the agent to attempt to make a decision up to the specified number of `maxAttempts` before giving up. The default value is `2`.
+
+### Patch Changes
+
+- [`8c3eab8`](https://github.com/statelyai/agent/commit/8c3eab8950cb85e662c6afb5d8cefb1d5ef54dd8) Thanks [@davidkpiano](https://github.com/davidkpiano)! - The `name` field in `createAgent({ name: '...' })` has been renamed to `id`.
+
+- [`8c3eab8`](https://github.com/statelyai/agent/commit/8c3eab8950cb85e662c6afb5d8cefb1d5ef54dd8) Thanks [@davidkpiano](https://github.com/davidkpiano)! - The `description` field in `createAgent({ description: '...' })` is now used for the `system` prompt in agent decision making when a `system` prompt is not provided.
+
 ## 2.0.0-next.0
 
 ### Major Changes
