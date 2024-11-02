@@ -307,7 +307,7 @@ test('You can listen for feedback events', () => {
   expect(fn).toHaveBeenCalled();
 });
 
-test('You can listen for plan events', async () => {
+test('You can listen for decision events', async () => {
   const fn = vi.fn();
   const model = new MockLanguageModelV1({
     doGenerate: async (params: LanguageModelV1CallOptions) => {
@@ -436,7 +436,7 @@ test('You can listen for message events', () => {
   );
 });
 
-test('agent.getPlans() returns plans from context', () => {
+test('agent.getDecisions() returns decisions from context', () => {
   const agent = createAgent({
     id: 'test',
     events: {},
@@ -459,10 +459,10 @@ test('agent.getPlans() returns plans from context', () => {
     },
   });
 
-  const plans = agent.getDecisions();
+  const decisions = agent.getDecisions();
 
-  expect(plans).toBeDefined();
-  expect(Array.isArray(plans)).toBe(true);
+  expect(decisions).toBeDefined();
+  expect(Array.isArray(decisions)).toBe(true);
 });
 
 test('Event listeners can be unsubscribed', () => {

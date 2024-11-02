@@ -154,7 +154,7 @@ test('interacts with an actor (late interaction)', async () => {
   expect(actor.getSnapshot().value).toBe('third');
 });
 
-test('agent.decide() makes a decision based on goal and state (simple planner)', async () => {
+test('agent.decide() makes a decision based on goal and state (simple strategy)', async () => {
   const model = new MockLanguageModelV1({
     doGenerate,
   });
@@ -167,7 +167,7 @@ test('agent.decide() makes a decision based on goal and state (simple planner)',
     },
   });
 
-  const plan = await agent.decide({
+  const decision = await agent.decide({
     goal: 'Make the best move',
     state: {
       value: 'playing',
@@ -188,8 +188,8 @@ test('agent.decide() makes a decision based on goal and state (simple planner)',
     }),
   });
 
-  expect(plan).toBeDefined();
-  expect(plan!.nextEvent).toEqual(
+  expect(decision).toBeDefined();
+  expect(decision!.nextEvent).toEqual(
     expect.objectContaining({
       type: 'MOVE',
     })
@@ -243,7 +243,7 @@ test.each([
       },
     });
 
-    const plan = await agent.decide({
+    const decision = await agent.decide({
       goal: 'Make the best move',
       state: {
         value: 'playing',
@@ -263,10 +263,10 @@ test.each([
     });
 
     if (!succeed) {
-      expect(plan).toBeUndefined();
+      expect(decision).toBeUndefined();
     } else {
-      expect(plan).toBeDefined();
-      expect(plan!.nextEvent).toEqual(
+      expect(decision).toBeDefined();
+      expect(decision!.nextEvent).toEqual(
         expect.objectContaining({
           type: 'MOVE',
         })

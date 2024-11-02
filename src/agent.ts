@@ -28,6 +28,7 @@ import {
   AgentDecisionInput,
   AgentDecideOptions,
   AnyAgent,
+  EventsFromAgent,
 } from './types';
 import { createSimpleStrategy } from './strategies/simple';
 import { agentDecide } from './decide';
@@ -484,14 +485,16 @@ export class Agent<
   }
 
   /**
-   * Resolves with an `AgentPlan` based on the information provided in the `options`, including:
+   * Resolves with an `AgentDecision` based on the information provided in the `options`, including:
    *
    * - The `goal` for the agent to achieve
    * - The observed current `state`
    * - The `machine` (e.g. a state machine) that specifies what can happen next
    * - Additional `context`
    */
-  public decide(opts: AgentDecideOptions<this>) {
+  public async decide(
+    opts: AgentDecideOptions<this>
+  ): Promise<AgentDecision<EventsFromAgent<this>> | undefined> {
     return agentDecide(this, opts);
   }
 }

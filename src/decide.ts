@@ -5,9 +5,9 @@ import {
   AgentDecisionLogic,
   AgentDecisionInput,
   AgentDecision,
-  EventsFromZodEventMapping,
   AgentDecideInput,
   TransitionData,
+  EventsFromAgent,
 } from './types';
 import { createSimpleStrategy } from './strategies/simple';
 import { getTransitions } from './utils';
@@ -16,7 +16,7 @@ import { CoreMessage, CoreTool, tool } from 'ai';
 export async function agentDecide<T extends AnyAgent>(
   agent: T,
   options: AgentDecideOptions<T>
-): Promise<AgentDecision<EventsFromZodEventMapping<T['events']>> | undefined> {
+): Promise<AgentDecision<EventsFromAgent<T>> | undefined> {
   const resolvedOptions = {
     ...agent.defaultOptions,
     ...options,
