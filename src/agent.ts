@@ -2,7 +2,6 @@ import {
   Actor,
   ActorRefLike,
   AnyEventObject,
-  AnyStateMachine,
   EventObject,
   fromTransition,
   Subscription,
@@ -30,7 +29,7 @@ import {
   AnyAgent,
   EventsFromAgent,
 } from './types';
-import { createSimpleStrategy } from './strategies/simple';
+import { simpleStrategy } from './strategies/simple';
 import { agentDecide } from './decide';
 import { getMachineHash, isActorRef, isMachineActor, randomId } from './utils';
 import {
@@ -106,7 +105,7 @@ export function createAgent<
   model,
   events,
   context,
-  strategy = createSimpleStrategy(),
+  strategy = simpleStrategy,
   logic = agentLogic as AgentLogic<TEvents>,
 }: {
   /**
@@ -177,7 +176,7 @@ export class Agent<
   public description?: string;
   public events: TEventSchemas;
   public context?: TContextSchema;
-  public strategy?: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
+  public strategy: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
   public types: {
     events: TEvents;
     context: Compute<TContext>;
@@ -194,7 +193,7 @@ export class Agent<
     model,
     events,
     context,
-    strategy = createSimpleStrategy(),
+    strategy = simpleStrategy,
   }: {
     logic: AgentLogic<TEvents>;
     id?: string;

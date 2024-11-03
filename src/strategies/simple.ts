@@ -5,21 +5,20 @@ import {
   PromptTemplate,
   AnyAgent,
 } from '../types';
-import { randomId } from '../utils';
+import { convertToXml, randomId } from '../utils';
 import { getNextSnapshot } from 'xstate';
-import { defaultTextTemplate } from '../templates/defaultText';
 import { getMessages } from '../text';
 import { getToolMap } from '../decide';
 
 const simpleStrategyPromptTemplate: PromptTemplate<any> = (data) => {
   return `
-${defaultTextTemplate(data)}
+${convertToXml(data)}
 
 Make at most one tool call to achieve the above goal. If the goal cannot be achieved with any tool calls, do not make any tool call.
   `.trim();
 };
 
-async function simpleStrategy<T extends AnyAgent>(
+export async function simpleStrategy<T extends AnyAgent>(
   agent: T,
   input: AgentDecideInput<any>
 ): Promise<AgentDecision<any> | undefined> {

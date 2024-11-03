@@ -59,6 +59,18 @@ export function wrapInXml(tagName: string, content: string): string {
   return `<${tagName}>${content}</${tagName}>`;
 }
 
+export function convertToXml(obj: Record<string, any>): string {
+  return Object.entries(obj)
+    .map(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        return wrapInXml(key, convertToXml(value));
+      } else {
+        return wrapInXml(key, value);
+      }
+    })
+    .join('');
+}
+
 export function randomId(prefix?: string): string {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 9);

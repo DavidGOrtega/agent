@@ -1,7 +1,8 @@
 import { createAgent, fromDecision } from '../src';
 import { z } from 'zod';
-import { setup, createActor } from 'xstate';
+import { setup, createActor, createMachine } from 'xstate';
 import { openai } from '@ai-sdk/openai';
+import { chainOfThoughtStrategy } from '../src/strategies/chainOfThought';
 
 const agent = createAgent({
   id: 'simple',
@@ -13,18 +14,10 @@ const agent = createAgent({
   },
 });
 
-const machine = setup({
-  actors: { agent: fromDecision(agent) },
-}).createMachine({
+const machine = createMachine({
   initial: 'thinking',
   states: {
     thinking: {
-      invoke: {
-        src: 'agent',
-        input: {
-          goal: 'Think about a random topic, and then share that thought.',
-        },
-      },
       on: {
         'agent.thought': {
           actions: ({ event }) => console.log(event.text),
@@ -39,3 +32,13 @@ const machine = setup({
 });
 
 const actor = createActor(machine).start();
+
+agent.onMessage(console.log);
+
+agent.interact(actor, (obs) => {
+  if (obs.state.matches('thinking')) {
+    return {
+      goal: 'Think about a random topic, and then share that thought.',
+    };
+  }
+});

@@ -2,7 +2,7 @@ import { createAgent } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { experimental_createShortestPathStrategy } from '../src/strategies/shortestPath';
+import { experimental_shortestPathStrategy } from '../src/strategies/shortestPath';
 
 const agent = createAgent({
   id: 'river-crossing-solver',
@@ -121,7 +121,7 @@ async function main() {
       machine: riverCrossingMachine,
       goal: 'Get all items safely across the river. Remember: Cannot leave wolf with goat or goat with cabbage unattended.',
       state: riverActor.getSnapshot(),
-      strategy: experimental_createShortestPathStrategy(),
+      strategy: experimental_shortestPathStrategy,
     });
 
     console.log(decision?.nextEvent);

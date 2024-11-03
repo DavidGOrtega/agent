@@ -3,6 +3,7 @@ import { createAgent, fromDecision } from '../src';
 import { openai } from '@ai-sdk/openai';
 import { assign, createActor, log, setup } from 'xstate';
 import { fromTerminal } from './helpers/helpers';
+import { chainOfThoughtStrategy } from '../src/strategies/chainOfThought';
 
 const agent = createAgent({
   id: 'chain-of-thought',
@@ -19,8 +20,8 @@ const agent = createAgent({
   },
   context: {
     question: z.string().nullable(),
-    thought: z.string().nullable(),
   },
+  strategy: chainOfThoughtStrategy,
 });
 
 const machine = setup({
@@ -30,7 +31,6 @@ const machine = setup({
   initial: 'asking',
   context: {
     question: null,
-    thought: null,
   },
   states: {
     asking: {
@@ -41,19 +41,6 @@ const machine = setup({
           actions: assign({
             question: ({ event }) => event.output,
           }),
-          target: 'thinking',
-        },
-      },
-    },
-    thinking: {
-      on: {
-        'agent.think': {
-          actions: [
-            log(({ event }) => `Thought: ${event.thought}`),
-            assign({
-              thought: ({ event }) => event.thought,
-            }),
-          ],
           target: 'answering',
         },
       },
@@ -74,14 +61,9 @@ const machine = setup({
 
 const actor = createActor(machine).start();
 
+agent.onMessage(console.log);
+
 agent.interact(actor, (obs) => {
-  if (obs.state.matches('thinking')) {
-    return {
-      goal: 'Think step-by-step about how you would answer the question',
-      context: obs.state.context,
-      messages: agent.getMessages(),
-    };
-  }
   if (obs.state.matches('answering')) {
     return {
       goal: 'Answer the question',

@@ -9,7 +9,7 @@ import {
   TransitionData,
   EventsFromAgent,
 } from './types';
-import { createSimpleStrategy } from './strategies/simple';
+import { simpleStrategy } from './strategies/simple';
 import { getTransitions } from './utils';
 import { CoreMessage, CoreTool, tool } from 'ai';
 
@@ -22,7 +22,7 @@ export async function agentDecide<T extends AnyAgent>(
     ...options,
   };
   const {
-    strategy = createSimpleStrategy(),
+    strategy = agent.strategy,
     goal,
     allowedEvents,
     events = agent.events,
@@ -61,6 +61,7 @@ export async function agentDecide<T extends AnyAgent>(
     if (decision?.nextEvent) {
       agent.addDecision(decision);
       await resolvedOptions.execute?.(decision.nextEvent);
+      break;
     }
   }
 
