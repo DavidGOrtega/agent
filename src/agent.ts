@@ -258,7 +258,6 @@ export class Agent<
     const feedback = {
       ...feedbackInput,
       attributes: { ...feedbackInput.attributes },
-      reward: feedbackInput.reward ?? 0,
       timestamp: feedbackInput.timestamp ?? Date.now(),
       episodeId: this.episodeId,
     } satisfies AgentFeedback;

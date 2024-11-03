@@ -169,24 +169,21 @@ export type AgentDecideOptions<T extends AnyAgent> = {
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
 export interface AgentFeedback {
-  goal?: string;
-  observationId?: string;
+  goal: string;
+  observationId: string;
   /**
    * The message correlation that the feedback is relevant for
    */
   attributes: Record<string, any>;
-  reward: number;
   timestamp: number;
   episodeId: string;
 }
 
 export interface AgentFeedbackInput {
-  goal?: string;
-  observationId?: string;
-  feedback?: string;
-  attributes?: Record<string, any>;
+  goal: string;
+  observationId: string;
+  attributes: Record<string, any>;
   timestamp?: number;
-  reward?: number;
 }
 
 export type AgentMessage = CoreMessage & {
