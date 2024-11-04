@@ -1,12 +1,10 @@
-import { generateObject, generateText } from 'ai';
-import { getToolMap } from '../decide';
+import { generateText } from 'ai';
 import {
   AnyAgent,
   AgentDecideInput,
   AgentDecision,
   PromptTemplate,
 } from '../types';
-import { defaultTextTemplate } from '../templates/defaultText';
 import { getMessages } from '../text';
 import { simpleStrategy } from './simple';
 import { convertToXml } from '../utils';

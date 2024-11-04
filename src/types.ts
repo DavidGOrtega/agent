@@ -152,11 +152,16 @@ export type AgentStrategy<T extends AnyAgent> = (
   input: AgentDecideInput<T['types']['events']>
 ) => Promise<AgentDecision<T['types']['events']> | undefined>;
 
+export type AgentInteractInput<T extends AnyAgent> = Omit<
+  AgentDecideOptions<T>,
+  'state'
+>;
+
 export type AgentDecideOptions<T extends AnyAgent> = {
   goal: string;
-  model?: LanguageModel;
   state: ObservedState;
   machine?: AnyStateMachine;
+  model?: LanguageModel;
   execute?: (event: AnyEventObject) => Promise<void>;
   strategy?: AgentStrategy<T>;
   events?: ZodEventMapping;

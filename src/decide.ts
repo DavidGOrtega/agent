@@ -3,13 +3,11 @@ import {
   AnyAgent,
   AgentDecideOptions,
   AgentDecisionLogic,
-  AgentDecisionInput,
   AgentDecision,
   AgentDecideInput,
   TransitionData,
   EventsFromAgent,
 } from './types';
-import { simpleStrategy } from './strategies/simple';
 import { getTransitions } from './utils';
 import { CoreMessage, CoreTool, tool } from 'ai';
 
@@ -68,9 +66,9 @@ export async function agentDecide<T extends AnyAgent>(
   return decision;
 }
 
-export function fromDecision(
-  agent: AnyAgent,
-  defaultInput?: AgentDecisionInput
+export function fromDecision<T extends AnyAgent>(
+  agent: T,
+  defaultInput?: AgentDecideInput<EventsFromAgent<T>>
 ): AgentDecisionLogic<any> {
   return fromPromise(async ({ input, self }) => {
     const parentRef = self._parent;
@@ -96,6 +94,8 @@ export function fromDecision(
         parentRef.send(event);
       },
       ...resolvedInput,
+      // @ts-ignore
+      messages: resolvedInput.messages,
     });
 
     return decision;

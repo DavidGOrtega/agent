@@ -28,6 +28,7 @@ import {
   AgentDecideOptions,
   AnyAgent,
   EventsFromAgent,
+  AgentInteractInput,
 } from './types';
 import { simpleStrategy } from './strategies/simple';
 import { agentDecide } from './decide';
@@ -366,13 +367,13 @@ export class Agent<
     actorRef: TActor,
     getInput: (
       observation: AgentObservation<TActor>
-    ) => AgentDecisionInput | void
+    ) => AgentInteractInput<this> | void
   ): Subscription;
   public interact<TActor extends ActorRefLike>(
     actorRef: TActor,
     getInput?: (
       observation: AgentObservation<TActor>
-    ) => AgentDecisionInput | void
+    ) => AgentInteractInput<this> | void
   ): Subscription {
     const actorRefCheck = isActorRef(actorRef) && actorRef.src;
     const machine = isMachineActor(actorRef) ? actorRef.src : undefined;
