@@ -106,6 +106,7 @@ export function createAgent<
   model,
   events,
   context,
+  episodeId,
   strategy = simpleStrategy,
   logic = agentLogic as AgentLogic<TEvents>,
 }: {
@@ -147,6 +148,7 @@ export function createAgent<
    */
   logic?: AgentLogic<TEvents>;
   model: LanguageModel;
+  episodeId?: string;
 }): Agent<TContextSchema, TEventSchemas> {
   return new Agent({
     id,
@@ -156,6 +158,7 @@ export function createAgent<
     strategy: strategy,
     model,
     logic,
+    episodeId,
   }) as any;
 }
 
@@ -194,6 +197,7 @@ export class Agent<
     model,
     events,
     context,
+    episodeId,
     strategy = simpleStrategy,
   }: {
     logic: AgentLogic<TEvents>;
@@ -204,16 +208,18 @@ export class Agent<
     events: TEventSchemas;
     context?: TContextSchema;
     strategy?: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
+    episodeId?: string;
   }) {
     super(logic);
     this.model = model;
-    this.episodeId = id ?? randomId();
+    this.episodeId = episodeId ?? randomId('episode-');
     this.name = name;
     this.description = description;
     this.events = events;
     this.context = context;
     this.strategy = strategy;
     this.types = {} as any;
+    this.id = id ?? randomId();
 
     this.start();
   }
