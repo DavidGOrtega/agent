@@ -262,6 +262,7 @@ export class Agent<
   public addFeedback(feedbackInput: AgentFeedbackInput) {
     const feedback = {
       ...feedbackInput,
+      comment: feedbackInput.comment ?? undefined,
       attributes: { ...feedbackInput.attributes },
       timestamp: feedbackInput.timestamp ?? Date.now(),
       episodeId: this.episodeId,

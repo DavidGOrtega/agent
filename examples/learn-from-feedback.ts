@@ -14,10 +14,6 @@ const agent = createAgent({
   },
 });
 
-agent.onMessage((msg) => {
-  console.log(`Message`, msg.content);
-});
-
 agent.on('decision', ({ decision }) => {
   console.log(`Decision: ${decision.nextEvent?.type ?? '??'}`);
 });
@@ -27,7 +23,7 @@ async function main() {
   let count = 0;
 
   while (status !== 'submitted') {
-    console.log(`Attempt ${count} - ${status}`);
+    console.log(`\nState: ${status} (attempt ${count + 1})`);
     if (count++ > 5) {
       break;
     }
@@ -55,7 +51,7 @@ async function main() {
                   prevState: observation?.prevState,
                   event: observation?.event,
                   state: observation?.state,
-                  feedback: f.attributes.text,
+                  feedback: f.comment,
                 };
               }),
             },
@@ -73,9 +69,8 @@ async function main() {
           await agent.addFeedback({
             observationId: observation.id,
             goal: 'Submit the form',
-            attributes: {
-              text: 'Form not submitted',
-            },
+            score: 0,
+            comment: 'Form not submitted',
           });
         } else if (decision?.nextEvent?.type === 'pressEnter') {
           status = 'submitted';
@@ -93,7 +88,7 @@ async function main() {
     }
   }
 
-  console.log('End of conversation.');
+  console.log('Success!');
   process.exit();
 }
 

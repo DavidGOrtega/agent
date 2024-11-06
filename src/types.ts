@@ -177,6 +177,8 @@ export type AgentDecideOptions<T extends AnyAgent> = {
 export interface AgentFeedback {
   goal: string;
   observationId: string;
+  score: number;
+  comment: string | undefined;
   /**
    * The message correlation that the feedback is relevant for
    */
@@ -188,7 +190,9 @@ export interface AgentFeedback {
 export interface AgentFeedbackInput {
   goal: string;
   observationId: string;
-  attributes: Record<string, any>;
+  score: number;
+  comment?: string;
+  attributes?: Record<string, any>;
   timestamp?: number;
 }
 
