@@ -89,7 +89,8 @@ export function fromDecision<T extends AnyAgent>(
 
     const decision = await agentDecide(agent, {
       machine: (parentRef as AnyActor).logic,
-      state,
+      state: snapshot,
+      context: resolvedInput.context,
       execute: async (event) => {
         parentRef.send(event);
       },

@@ -32,7 +32,7 @@ export async function simpleStrategy<T extends AnyAgent>(
   // Create a prompt with the given context and goal.
   // The template is used to ensure that a single tool call at most is made.
   const prompt = simpleStrategyPromptTemplate({
-    context: input.state.context,
+    context: input.context,
     goal: input.goal,
   });
 
@@ -42,6 +42,7 @@ export async function simpleStrategy<T extends AnyAgent>(
 
   const {
     state,
+    context,
     machine,
     prevDecision,
     events,
@@ -50,12 +51,13 @@ export async function simpleStrategy<T extends AnyAgent>(
     ...rest
   } = input;
 
-  const machineState = input.machine
-    ? input.machine.resolveState({
-        ...input.state,
-        context: input.state.context,
-      })
-    : undefined;
+  const machineState =
+    input.machine && input.state
+      ? input.machine.resolveState({
+          ...input.state,
+          context: input.state.context ?? {},
+        })
+      : undefined;
 
   const result = await generateText({
     ...rest,
