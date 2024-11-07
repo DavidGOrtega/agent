@@ -1,5 +1,45 @@
 # @statelyai/agent
 
+## 2.0.0-next.2
+
+### Minor Changes
+
+- [`4d870fe`](https://github.com/statelyai/agent/commit/4d870fe38ad0c906bafb2e0f6b2dabb745900ad3) Thanks [@davidkpiano](https://github.com/davidkpiano)! - planner -> strategy
+  agent.addPlan -> agent.addDecision
+  agent.getPlans -> agent.getDecisions
+
+  The word "strategy" is now used instead of "planner" to make it more clear what the agent is doing: it uses a strategy to make decisions. The method `agent.addPlan(…)` has been renamed to `agent.addDecision(…)` and `agent.getPlans(…)` has been renamed to `agent.getDecisions(…)` to reflect this change. Additionally, you specify the `strategy` instead of the `planner` when creating an agent:
+
+  ```diff
+  const agent = createAgent({
+  - planner: createSimplePlanner(),
+  + strategy: createSimpleStrategy(),
+    ...
+  });
+  ```
+
+- [`f1189cb`](https://github.com/statelyai/agent/commit/f1189cb980e52fa909888d27d3300dcd913ea47f) Thanks [@davidkpiano](https://github.com/davidkpiano)! - For feedback, the `goal`, `observationId`, and `attributes` are now required, and `feedback` and `reward` are removed since they are redundant.
+
+- [`7b16326`](https://github.com/statelyai/agent/commit/7b163266c61bfc8125ed4d00924680d932001e27) Thanks [@davidkpiano](https://github.com/davidkpiano)! - You can specify `allowedEvents` in `agent.decide(...)` to allow from a list of specific events to be sent to the agent. This is useful when using `agent.decide(...)` without a state machine.
+
+  ```ts
+  const agent = createAgent({
+    // ...
+    events: {
+      PLAY: z.object({}).describe("Play a move"),
+      SKIP: z.object({}).describe("Skip a move"),
+      FORFEIT: z.object({}).describe("Forfeit the game"),
+    },
+  });
+
+  // ...
+  const decision = await agent.decide({
+    // Don't allow the agent to send `FORFEIT` or other events
+    allowedEvents: ["PLAY", "SKIP"],
+    // ...
+  });
+  ```
+
 ## 2.0.0-next.1
 
 ### Minor Changes
