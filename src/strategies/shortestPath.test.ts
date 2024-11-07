@@ -1,4 +1,4 @@
-import { createAgent } from '..';
+import { createAgent, TypesFromAgent } from '..';
 import { assign, createActor, setup } from 'xstate';
 import { z } from 'zod';
 import { experimental_shortestPathStrategy } from './shortestPath';
@@ -35,10 +35,7 @@ test.skip('should find shortest path to goal', async () => {
   });
 
   const counterMachine = setup({
-    types: {
-      context: agent.types.context,
-      events: agent.types.events,
-    },
+    types: {} as TypesFromAgent<typeof agent>,
   }).createMachine({
     initial: 'counting',
     context: { count: 0 },

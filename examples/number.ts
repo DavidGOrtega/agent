@@ -1,4 +1,4 @@
-import { createAgent, fromDecision } from '../src';
+import { createAgent, EventsFromAgent, fromDecision } from '../src';
 import { assign, createActor, log, setup } from 'xstate';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
@@ -21,7 +21,7 @@ const machine = setup({
       previousGuesses: number[];
       answer: number | null;
     },
-    events: agent.types.events,
+    events: {} as EventsFromAgent<typeof agent>,
   },
   actors: {
     agent: fromDecision(agent),

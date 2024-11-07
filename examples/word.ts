@@ -1,6 +1,11 @@
 import { assign, createActor, log, setup } from 'xstate';
 import { fromTerminal } from './helpers/helpers';
-import { createAgent, fromDecision } from '../src';
+import {
+  ContextFromAgent,
+  createAgent,
+  fromDecision,
+  TypesFromAgent,
+} from '../src';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
 
@@ -36,13 +41,10 @@ const context = {
   word: null,
   guessedWord: null,
   lettersGuessed: [],
-} satisfies typeof agent.types.context;
+} satisfies ContextFromAgent<typeof agent>;
 
 const wordGuesserMachine = setup({
-  types: {
-    context: agent.types.context,
-    events: agent.types.events,
-  },
+  types: {} as TypesFromAgent<typeof agent>,
   actors: {
     agent: fromDecision(agent),
     getFromTerminal: fromTerminal,

@@ -149,8 +149,8 @@ export type PromptTemplate<TEvents extends EventObject> = (data: {
 
 export type AgentStrategy<T extends AnyAgent> = (
   agent: T,
-  input: AgentDecideInput<T['types']['events']>
-) => Promise<AgentDecision<T['types']['events']> | undefined>;
+  input: AgentDecideInput<EventsFromAgent<T>>
+) => Promise<AgentDecision<EventsFromAgent<T>> | undefined>;
 
 export type AgentInteractInput<T extends AnyAgent> = Omit<
   AgentDecideOptions<T>,
@@ -488,4 +488,21 @@ export type EventsFromAgent<T extends AnyAgent> = T extends Agent<
   infer ___
 >
   ? TEvents
+  : never;
+
+export type TypesFromAgent<T extends AnyAgent> = T extends Agent<
+  infer TContextSchema,
+  infer TEventSchema
+>
+  ? {
+      context: ContextFromZodContextMapping<TContextSchema>;
+      events: EventsFromZodEventMapping<TEventSchema>;
+    }
+  : never;
+
+export type ContextFromAgent<T extends AnyAgent> = T extends Agent<
+  infer TContextSchema,
+  infer _TEventSchema
+>
+  ? ContextFromZodContextMapping<TContextSchema>
   : never;

@@ -181,10 +181,10 @@ export class Agent<
   public events: TEventSchemas;
   public context?: TContextSchema;
   public strategy: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
-  public types: {
-    events: TEvents;
-    context: Compute<TContext>;
-  };
+  // public types: {
+  //   events: TEvents;
+  //   context: Compute<TContext>;
+  // };
   public model: LanguageModel;
   public memory: AgentLongTermMemory | undefined;
   public defaultOptions: AgentDecideOptions<AnyAgent> | undefined; // todo
@@ -218,7 +218,6 @@ export class Agent<
     this.events = events;
     this.context = context;
     this.strategy = strategy;
-    this.types = {} as any;
     this.id = id ?? randomId();
 
     this.start();

@@ -1,6 +1,13 @@
 import { assign, setup, assertEvent, createActor } from 'xstate';
 import { z } from 'zod';
-import { createAgent, fromDecision, fromTextStream } from '../src';
+import {
+  ContextFromAgent,
+  createAgent,
+  EventsFromAgent,
+  fromDecision,
+  fromTextStream,
+  TypesFromAgent,
+} from '../src';
 import { openai } from '@ai-sdk/openai';
 import { generateObject, generateText } from 'ai';
 import * as fs from 'fs';
@@ -73,7 +80,7 @@ const initialContext = {
   player: 'x' as Player,
   gameReport: '',
   lastReason: '',
-} satisfies typeof xAgent.types.context;
+} satisfies ContextFromAgent<typeof xAgent>;
 
 function getWinner(board: typeof initialContext.board): Player | null {
   const lines = [
@@ -96,9 +103,9 @@ function getWinner(board: typeof initialContext.board): Player | null {
 
 export const ticTacToeMachine = setup({
   types: {
-    context: xAgent.types.context,
+    context: {} as ContextFromAgent<typeof xAgent>,
     events: {} as
-      | typeof xAgent.types.events
+      | EventsFromAgent<typeof xAgent>
       | {
           type: 'reset';
         },

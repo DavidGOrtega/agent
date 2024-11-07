@@ -1,5 +1,5 @@
 import { test, expect, vi } from 'vitest';
-import { createAgent } from './';
+import { createAgent, TypesFromAgent } from './';
 import { createActor, createMachine } from 'xstate';
 import { LanguageModelV1CallOptions } from 'ai';
 import { z } from 'zod';
@@ -386,12 +386,14 @@ test('agent.types provides context and event types', () => {
     },
   });
 
-  agent.types satisfies { context: any; events: any };
+  let types = {} as TypesFromAgent<typeof agent>;
 
-  agent.types.context satisfies { score: number };
+  types satisfies { context: any; events: any };
+
+  types.context satisfies { score: number };
 
   // @ts-expect-error
-  agent.types.context satisfies { score: string };
+  types.context satisfies { score: string };
 });
 
 test('It allows unrecognized events', () => {

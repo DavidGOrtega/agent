@@ -1,5 +1,5 @@
 import { assign, createActor, fromCallback, log, setup } from 'xstate';
-import { createAgent, fromDecision } from '../src';
+import { createAgent, fromDecision, TypesFromAgent } from '../src';
 import { loadingAnimation } from './helpers/loader';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
@@ -81,7 +81,7 @@ const agent = createAgent({
 });
 
 const jokeMachine = setup({
-  types: agent.types,
+  types: {} as TypesFromAgent<typeof agent>,
   actors: {
     agent: fromDecision(agent),
     loader,

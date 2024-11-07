@@ -1,4 +1,4 @@
-import { createAgent } from '../src';
+import { createAgent, TypesFromAgent } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
@@ -45,10 +45,7 @@ const agent = createAgent({
 });
 
 const riverCrossingMachine = setup({
-  types: {
-    context: agent.types.context,
-    events: agent.types.events,
-  },
+  types: {} as TypesFromAgent<typeof agent>,
 }).createMachine({
   initial: 'solving',
   context: {

@@ -1,4 +1,4 @@
-import { createAgent, fromDecision } from '../src';
+import { createAgent, EventsFromAgent, fromDecision } from '../src';
 import { assign, createActor, setup } from 'xstate';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
@@ -38,8 +38,8 @@ const machine = setup({
       messages: string[];
     },
     events: {} as
-      | typeof customerServiceAgent.types.events
-      | typeof customerAgent.types.events,
+      | EventsFromAgent<typeof customerServiceAgent>
+      | EventsFromAgent<typeof customerAgent>,
   },
   actors: {
     customerService: fromDecision(customerServiceAgent),
