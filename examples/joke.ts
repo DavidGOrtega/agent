@@ -186,40 +186,52 @@ const jokeMachine = setup({
 
 const actor = createActor(jokeMachine);
 
-agent.interact(actor, (observed) => {
-  if (observed.state.matches('tellingJoke')) {
+agent.interact(actor, ({ state }) => {
+  if (state.matches('tellingJoke')) {
     return {
       goal: 'Tell me a joke about the topic. Do not make any joke that is not relevant to the topic.',
-      context: {
-        topic: observed.state.context.topic,
+      state: {
+        ...state,
+        context: {
+          topic: state.context.topic,
+        },
       },
     };
   }
 
-  if (observed.state.matches('relevance')) {
+  if (state.matches('relevance')) {
     return {
       goal: 'An irrelevant joke has no reference to the topic. If the last joke is completely irrelevant to the topic, ask for a new joke topic. Otherwise, continue.',
-      context: {
-        topic: observed.state.context.topic,
-        lastJoke: observed.state.context.jokes.at(-1),
+      state: {
+        ...state,
+        context: {
+          topic: state.context.topic,
+          lastJoke: state.context.jokes.at(-1),
+        },
       },
     };
   }
 
-  if (observed.state.matches('rateJoke')) {
+  if (state.matches('rateJoke')) {
     return {
       goal: 'Rate the last joke on a scale of 1 to 10.',
-      context: {
-        lastJoke: observed.state.context.jokes.at(-1),
+      state: {
+        ...state,
+        context: {
+          lastJoke: state.context.jokes.at(-1),
+        },
       },
     };
   }
 
-  if (observed.state.matches('decide')) {
+  if (state.matches('decide')) {
     return {
       goal: 'Choose what to do next, given the previous rating of the joke.',
-      context: {
-        lastRating: observed.state.context.lastRating,
+      state: {
+        ...state,
+        context: {
+          lastRating: state.context.lastRating,
+        },
       },
     };
   }

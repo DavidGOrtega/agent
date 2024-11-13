@@ -122,19 +122,19 @@ const machine = setup({
 // Create and start the actor
 const actor = createActor(machine).start();
 
-agent.interact(actor, (obs) => {
-  if (obs.state.matches('processing')) {
+agent.interact(actor, ({ state }) => {
+  if (state.matches('processing')) {
     return {
       goal: 'Determine if user is asking about weather and for which location. If so, get the weather. Otherwise, respond to the user.',
-      context: obs.state.context,
+      state,
       messages: agent.getMessages(),
     };
   }
 
-  if (obs.state.matches('responding')) {
+  if (state.matches('responding')) {
     return {
       goal: 'Provide a natural response about the weather in ${context.location}',
-      context: obs.state.context,
+      state,
       messages: agent.getMessages(),
     };
   }

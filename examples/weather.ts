@@ -156,20 +156,23 @@ const machine = setup({
 const actor = createActor(machine);
 actor.start();
 
-agent.interact(actor, (obs) => {
-  if (obs.state.matches('decide')) {
+agent.interact(actor, ({ state }) => {
+  if (state.matches('decide')) {
     return {
       goal: `Decide what to do based on the given location, which may or may not be a location`,
-      context: {
-        location: obs.state.context.location,
+      state: {
+        ...state,
+        context: {
+          location: state.context.location,
+        },
       },
     };
   }
 
-  if (obs.state.matches('reportWeather')) {
+  if (state.matches('reportWeather')) {
     return {
       goal: `Report the weather for the given location`,
-      context: obs.state.context,
+      state,
     };
   }
 });

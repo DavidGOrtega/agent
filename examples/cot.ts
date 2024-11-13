@@ -67,7 +67,7 @@ agent.interact(actor, (obs) => {
   if (obs.state.matches('answering')) {
     return {
       goal: 'Answer the question',
-      context: obs.state.context,
+      state: obs.state,
       messages: agent.getMessages(),
     };
   }

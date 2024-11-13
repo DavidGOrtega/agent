@@ -155,7 +155,7 @@ export type AgentInteractInput<T extends AnyAgent> = Omit<
 export type AgentDecideOptions<T extends AnyAgent> = {
   goal: string;
   state: ObservedState;
-  context?: Record<string, any>;
+  context?: never;
   machine?: AnyStateMachine;
   model?: LanguageModel;
   execute?: (event: AnyEventObject) => Promise<void>;

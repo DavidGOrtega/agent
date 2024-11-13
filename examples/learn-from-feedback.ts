@@ -39,22 +39,42 @@ async function main() {
           );
 
         const decision = await agent.decide({
-          goal: 'Submit the form. Take the feedback into consideration, and perform the action that will lead to the form being submitted.',
+          goal: `
+<currentState>editing</currentState>
+
+<actions>
+  <action id="pressEnter">
+    <exploration_value>0.2</exploration_value>
+    <known_outcomes></known_outcomes>
+  </action>
+  <action id="submit">
+    <exploration_value>0.8</exploration_value>
+    <known_outcomes>
+      <outcome probability="0.1">editing</outcome>
+      <outcome probability="0.9">submitted</outcome>
+    </known_outcomes>
+  </action>
+</actions>
+
+<goal>Submit the form.</goal>
+
+Achieve the goal. Consider both exploring unknown actions (high exploration_value) and using actions with known outcomes. Prefer exploration when an action has no known outcomes.
+          `.trim(),
           state: {
             value: 'editing',
-            context: {
-              feedback: relevantFeedback.map((f) => {
-                const observation = relevantObservations.find(
-                  (o) => o.id === f.observationId
-                );
-                return {
-                  prevState: observation?.prevState,
-                  event: observation?.event,
-                  state: observation?.state,
-                  outcome: f.comment,
-                };
-              }),
-            },
+            // context: {
+            //   feedback: relevantFeedback.map((f) => {
+            //     const observation = relevantObservations.find(
+            //       (o) => o.id === f.observationId
+            //     );
+            //     return {
+            //       prevState: observation?.prevState,
+            //       event: observation?.event,
+            //       state: observation?.state,
+            //       comment: f.comment,
+            //     };
+            //   }),
+            // },
           },
         });
 
@@ -88,8 +108,15 @@ async function main() {
     }
   }
 
-  console.log('Success!');
+  if (status === 'submitted') {
+    console.log('Success!');
+  } else {
+    console.log('Failure!');
+  }
   process.exit();
 }
 
+agent.onMessage((msg) => {
+  // console.log(msg.content);
+});
 main().catch(console.error);
