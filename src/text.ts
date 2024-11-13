@@ -54,7 +54,7 @@ export function fromTextStream<T extends AnyAgent>(
 ): ObservableActorLogic<
   { textDelta: string },
   Omit<AgentStreamTextOptions, 'context'> & {
-    context?: AgentStreamTextOptions['context'];
+    context?: Record<string, any>;
   }
 > {
   const template = options?.template ?? defaultTextTemplate;
@@ -71,7 +71,7 @@ export function fromTextStream<T extends AnyAgent>(
           : await input.prompt(agent);
       const promptWithContext = template({
         goal,
-        context: input.context,
+        state: input.state,
       });
       const messages = await getMessages(agent, promptWithContext, input);
       const result = await streamText({
@@ -112,7 +112,7 @@ export function fromText<T extends AnyAgent>(
 ): PromiseActorLogic<
   GenerateTextResult<Record<string, CoreTool<any, any>>>,
   Omit<AgentGenerateTextOptions, 'context'> & {
-    context?: AgentGenerateTextOptions['context'];
+    context?: Record<string, any>;
   }
 > {
   const resolvedOptions = {
@@ -130,7 +130,7 @@ export function fromText<T extends AnyAgent>(
 
     const promptWithContext = template({
       goal,
-      context: input.context,
+      state: input.state,
     });
 
     const messages = await getMessages(agent, promptWithContext, input);

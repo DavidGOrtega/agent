@@ -125,11 +125,6 @@ export type PromptTemplate<TEvents extends EventObject> = (data: {
    */
   state?: ObservedState;
   /**
-   * The context to provide.
-   * This overrides the observed state.context, if provided.
-   */
-  context?: any;
-  /**
    * The state machine model of the observed environment
    */
   machine?: unknown;
@@ -426,7 +421,7 @@ export type FromAgent<T> = T | ((agent: AnyAgent) => T | Promise<T>);
 export type CommonTextOptions = {
   prompt: FromAgent<string>;
   model?: LanguageModel;
-  context?: Record<string, any>;
+  state?: ObservedState;
   messages?: FromAgent<CoreMessage[]>;
   template?: PromptTemplate<any>;
 };

@@ -71,9 +71,7 @@ test('agent.addFeedback() adds to feedback', () => {
   });
 
   const feedback = agent.addFeedback({
-    attributes: {
-      score: -1,
-    },
+    score: -1,
     goal: 'Win the game',
     observationId: 'obs-1',
   });
@@ -206,9 +204,7 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
   });
 
   const feedback = agent.addFeedback({
-    attributes: {
-      score: -1,
-    },
+    score: -1,
     goal: 'Win the game',
     observationId: observation.id,
   });
@@ -297,9 +293,7 @@ test('You can listen for feedback events', () => {
   agent.on('feedback', fn);
 
   agent.addFeedback({
-    attributes: {
-      score: -1,
-    },
+    score: -1,
     goal: 'Win the game',
     observationId: 'obs-1',
   });

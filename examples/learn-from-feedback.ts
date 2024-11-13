@@ -51,7 +51,7 @@ async function main() {
                   prevState: observation?.prevState,
                   event: observation?.event,
                   state: observation?.state,
-                  feedback: f.comment,
+                  outcome: f.comment,
                 };
               }),
             },

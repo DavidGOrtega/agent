@@ -9,12 +9,9 @@ import { getMessages } from '../text';
 import { simpleStrategy } from './simple';
 import { convertToXml } from '../utils';
 
-const chainOfThoughtPromptTemplate: PromptTemplate<any> = ({
-  context,
-  goal,
-}) => {
+const chainOfThoughtPromptTemplate: PromptTemplate<any> = ({ state, goal }) => {
   return `
-${convertToXml({ context, goal })}
+${convertToXml({ state: state?.value, context: state?.context, goal })}
 
 How would you achieve the goal? Think step-by-step.
 `.trim();
@@ -25,7 +22,7 @@ export async function chainOfThoughtStrategy<T extends AnyAgent>(
   input: AgentDecideInput<any>
 ): Promise<AgentDecision<any> | undefined> {
   const prompt = chainOfThoughtPromptTemplate({
-    context: input.state.context,
+    state: input.state,
     goal: input.goal,
   });
 
