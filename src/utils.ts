@@ -101,7 +101,7 @@ export function isActorRef(
 }
 
 export function getTransitions(
-  state: ObservedState,
+  state: ObservedState<any>,
   machine: AnyStateMachine
 ): TransitionData[] {
   if (!machine) {

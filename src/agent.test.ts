@@ -80,9 +80,7 @@ test('agent.addFeedback() adds to feedback', () => {
 
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      attributes: {
-        score: -1,
-      },
+      score: -1,
       goal: 'Win the game',
       observationId: 'obs-1',
       episodeId: expect.any(String),
@@ -91,9 +89,7 @@ test('agent.addFeedback() adds to feedback', () => {
   );
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      attributes: {
-        score: -1,
-      },
+      score: -1,
       goal: 'Win the game',
       observationId: 'obs-1',
       episodeId: expect.any(String),
@@ -213,9 +209,7 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
 
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      attributes: {
-        score: -1,
-      },
+      score: -1,
       goal: 'Win the game',
       observationId: observation.id,
       episodeId: expect.any(String),
@@ -224,9 +218,7 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
   );
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      attributes: {
-        score: -1,
-      },
+      score: -1,
       goal: 'Win the game',
       observationId: observation.id,
       episodeId: expect.any(String),

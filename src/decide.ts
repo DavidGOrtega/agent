@@ -6,15 +6,15 @@ import {
   AgentDecision,
   AgentDecideInput,
   TransitionData,
-  EventsFromAgent,
+  EventFromAgent,
 } from './types';
 import { getTransitions } from './utils';
 import { CoreMessage, CoreTool, tool } from 'ai';
 
-export async function agentDecide<T extends AnyAgent>(
-  agent: T,
-  options: AgentDecideOptions<T>
-): Promise<AgentDecision<EventsFromAgent<T>> | undefined> {
+export async function agentDecide<TAgent extends AnyAgent>(
+  agent: TAgent,
+  options: AgentDecideOptions<TAgent>
+): Promise<AgentDecision<TAgent> | undefined> {
   const resolvedOptions = {
     ...agent.defaultOptions,
     ...options,
@@ -45,12 +45,17 @@ export async function agentDecide<T extends AnyAgent>(
 
   let decision: AgentDecision<any> | undefined;
 
+  const minimalState = {
+    value: state.value,
+    context: state.context,
+  };
+
   while (attempts++ < maxAttempts) {
     decision = await strategy(agent, {
       model,
       goal,
       events: filteredEventSchemas,
-      state,
+      state: minimalState,
       machine,
       messages: messages as CoreMessage[], // TODO: fix UIMessage thing
       ...otherDecideInput,
@@ -68,7 +73,7 @@ export async function agentDecide<T extends AnyAgent>(
 
 export function fromDecision<T extends AnyAgent>(
   agent: T,
-  defaultInput?: AgentDecideInput<EventsFromAgent<T>>
+  defaultInput?: AgentDecideInput<EventFromAgent<T>>
 ): AgentDecisionLogic<any> {
   return fromPromise(async ({ input, self }) => {
     const parentRef = self._parent;

@@ -16,7 +16,10 @@ import { AnyMachineSnapshot } from 'xstate';
 
 const ajv = new Ajv();
 
-function observedStatesEqual(state1: ObservedState, state2: ObservedState) {
+function observedStatesEqual(
+  state1: ObservedState<any>,
+  state2: ObservedState<any>
+) {
   // check state value && state context
   return (
     JSON.stringify(state1.value) === JSON.stringify(state2.value) &&
@@ -24,7 +27,7 @@ function observedStatesEqual(state1: ObservedState, state2: ObservedState) {
   );
 }
 
-function trimSteps(steps: AgentStep<any>[], currentState: ObservedState) {
+function trimSteps(steps: AgentStep<any>[], currentState: ObservedState<any>) {
   const index = steps.findIndex(
     (step) => step.state && observedStatesEqual(step.state, currentState)
   );

@@ -28,10 +28,10 @@ import {
  * @param options
  * @returns
  */
-export async function getMessages(
-  agent: AnyAgent,
+export async function getMessages<TAgent extends AnyAgent>(
+  agent: TAgent,
   prompt: string,
-  options: Omit<AgentGenerateTextOptions, 'prompt'>
+  options: Omit<AgentGenerateTextOptions<TAgent>, 'prompt'>
 ): Promise<CoreMessage[]> {
   let messages: CoreMessage[] = [];
   if (typeof options.messages === 'function') {
@@ -48,12 +48,12 @@ export async function getMessages(
   return messages;
 }
 
-export function fromTextStream<T extends AnyAgent>(
-  agent: T,
-  options?: AgentStreamTextOptions
+export function fromTextStream<TAgent extends AnyAgent>(
+  agent: TAgent,
+  options?: AgentStreamTextOptions<TAgent>
 ): ObservableActorLogic<
   { textDelta: string },
-  Omit<AgentStreamTextOptions, 'context'> & {
+  Omit<AgentStreamTextOptions<TAgent>, 'context'> & {
     context?: Record<string, any>;
   }
 > {
@@ -106,12 +106,12 @@ export function fromTextStream<T extends AnyAgent>(
   });
 }
 
-export function fromText<T extends AnyAgent>(
-  agent: T,
-  options?: AgentGenerateTextOptions
+export function fromText<TAgent extends AnyAgent>(
+  agent: TAgent,
+  options?: AgentGenerateTextOptions<TAgent>
 ): PromiseActorLogic<
   GenerateTextResult<Record<string, CoreTool<any, any>>>,
-  Omit<AgentGenerateTextOptions, 'context'> & {
+  Omit<AgentGenerateTextOptions<TAgent>, 'context'> & {
     context?: Record<string, any>;
   }
 > {

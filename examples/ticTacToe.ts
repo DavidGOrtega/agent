@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   ContextFromAgent,
   createAgent,
-  EventsFromAgent,
+  EventFromAgent,
   fromDecision,
   fromTextStream,
   TypesFromAgent,
@@ -105,7 +105,7 @@ export const ticTacToeMachine = setup({
   types: {
     context: {} as ContextFromAgent<typeof xAgent>,
     events: {} as
-      | EventsFromAgent<typeof xAgent>
+      | EventFromAgent<typeof xAgent>
       | {
           type: 'reset';
         },

@@ -1,7 +1,6 @@
 import {
   Actor,
   ActorRefLike,
-  AnyEventObject,
   EventObject,
   fromTransition,
   Subscription,
@@ -23,11 +22,8 @@ import {
   AgentMessageInput,
   AgentFeedbackInput,
   AgentDecision,
-  Compute,
-  AgentDecisionInput,
   AgentDecideOptions,
   AnyAgent,
-  EventsFromAgent,
   AgentInteractInput,
 } from './types';
 import { simpleStrategy } from './strategies/simple';
@@ -40,7 +36,7 @@ import {
 } from 'ai';
 import { createAgentMiddleware } from './middleware';
 
-export const agentLogic: AgentLogic<AnyEventObject> = fromTransition(
+export const agentLogic: AgentLogic<any> = fromTransition(
   (state, event, { emit }) => {
     switch (event.type) {
       case 'agent.feedback': {
@@ -92,14 +88,15 @@ export const agentLogic: AgentLogic<AnyEventObject> = fromTransition(
       messages: [],
       observations: [],
       decisions: [],
-    } as AgentMemoryContext)
+    } as AgentMemoryContext<any>)
 );
 
 export function createAgent<
   const TContextSchema extends ZodContextMapping,
   const TEventSchemas extends ZodEventMapping,
   TEvents extends EventObject = EventsFromZodEventMapping<TEventSchemas>,
-  TContext = ContextFromZodContextMapping<TContextSchema>
+  TContext = ContextFromZodContextMapping<TContextSchema>,
+  TAgent extends AnyAgent = Agent<TContextSchema, TEventSchemas>
 >({
   id,
   description: description,
@@ -108,7 +105,7 @@ export function createAgent<
   context,
   episodeId,
   strategy = simpleStrategy,
-  logic = agentLogic as AgentLogic<TEvents>,
+  logic = agentLogic as AgentLogic<any>,
 }: {
   /**
    * The unique identifier for the agent.
@@ -142,11 +139,11 @@ export function createAgent<
    */
   getMemory?: (
     agent: Agent<TContextSchema, TEventSchemas>
-  ) => AgentLongTermMemory;
+  ) => AgentLongTermMemory<TAgent>;
   /**
    * Agent logic
    */
-  logic?: AgentLogic<TEvents>;
+  logic?: AgentLogic<TAgent>;
   model: LanguageModel;
   episodeId?: string;
 }): Agent<TContextSchema, TEventSchemas> {
@@ -167,7 +164,7 @@ export class Agent<
   const TEventSchemas extends ZodEventMapping,
   TEvents extends EventObject = EventsFromZodEventMapping<TEventSchemas>,
   TContext = ContextFromZodContextMapping<TContextSchema>
-> extends Actor<AgentLogic<TEvents>> {
+> extends Actor<AgentLogic<any>> {
   /**
    * The name of the agent. All agents with the same name are related and
    * able to share experiences (observations, feedback) with each other.
@@ -186,11 +183,11 @@ export class Agent<
   //   context: Compute<TContext>;
   // };
   public model: LanguageModel;
-  public memory: AgentLongTermMemory | undefined;
+  public memory: AgentLongTermMemory<this> | undefined;
   public defaultOptions: AgentDecideOptions<AnyAgent> | undefined; // todo
 
   constructor({
-    logic = agentLogic as AgentLogic<TEvents>,
+    logic = agentLogic as AgentLogic<any>,
     id,
     name,
     description,
@@ -200,7 +197,7 @@ export class Agent<
     episodeId,
     strategy = simpleStrategy,
   }: {
-    logic: AgentLogic<TEvents>;
+    logic: AgentLogic<any>;
     id?: string;
     name?: string;
     description?: string;
@@ -282,7 +279,7 @@ export class Agent<
   }
 
   public addObservation(
-    observationInput: AgentObservationInput
+    observationInput: AgentObservationInput<this>
   ): AgentObservation<any> {
     const { prevState, event, state } = observationInput;
     const observation = {
@@ -312,7 +309,7 @@ export class Agent<
     return this.getSnapshot().context.observations;
   }
 
-  public addDecision(decision: AgentDecision<TEvents>) {
+  public addDecision(decision: AgentDecision<this>) {
     this.send({
       type: 'agent.decision',
       decision,
@@ -384,12 +381,14 @@ export class Agent<
     const actorRefCheck = isActorRef(actorRef) && actorRef.src;
     const machine = isMachineActor(actorRef) ? actorRef.src : undefined;
 
-    let prevState: ObservedState | undefined = undefined;
+    let prevState: ObservedState<this> | undefined = undefined;
     let subscribed = true;
 
     const agent = this;
 
-    async function handleObservation(observationInput: AgentObservationInput) {
+    async function handleObservation(
+      observationInput: AgentObservationInput<any>
+    ) {
       const observation = agent.addObservation(observationInput);
 
       const input = getInput?.(observation);
@@ -426,7 +425,7 @@ export class Agent<
               prevState,
               state: inspEvent.snapshot as any,
               machine: (actorRef as any).src,
-            } satisfies AgentObservationInput;
+            } satisfies AgentObservationInput<any>;
 
             await handleObservation(observationInput);
           },
@@ -452,7 +451,7 @@ export class Agent<
   }
 
   public observe<TActor extends ActorRefLike>(actorRef: TActor): Subscription {
-    let prevState: ObservedState = actorRef.getSnapshot();
+    let prevState: ObservedState<this> = actorRef.getSnapshot();
     const actorRefCheck = isActorRef(actorRef);
 
     const sub = actorRefCheck
@@ -470,7 +469,7 @@ export class Agent<
               prevState,
               state: inspEvent.snapshot as any,
               machine: (actorRef as any).src,
-            } satisfies AgentObservationInput;
+            } satisfies AgentObservationInput<this>;
 
             prevState = observationInput.state;
 
@@ -499,7 +498,7 @@ export class Agent<
    */
   public async decide(
     opts: AgentDecideOptions<this>
-  ): Promise<AgentDecision<EventsFromAgent<this>> | undefined> {
+  ): Promise<AgentDecision<this> | undefined> {
     return agentDecide(this, opts);
   }
 }

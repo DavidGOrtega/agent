@@ -27,18 +27,18 @@ export type GenerateTextOptions = Parameters<typeof generateText>[0];
 
 export type StreamTextOptions = Parameters<typeof streamText>[0];
 
-export type CostFunction<TEvent extends EventObject> = (
-  path: AgentPath<TEvent>
+export type CostFunction<TAgent extends AnyAgent> = (
+  path: AgentPath<TAgent>
 ) => number;
 
-export type AgentDecideInput<TEvent extends EventObject> = Omit<
-  AgentGenerateTextOptions,
+export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
+  AgentGenerateTextOptions<TAgent>,
   'prompt' | 'tools'
 > & {
   /**
    * The currently observed state.
    */
-  state: ObservedState;
+  state: ObservedState<TAgent>;
   /**
    * The goal for the agent to accomplish.
    * The agent will make a decision based on this goal.
@@ -57,12 +57,12 @@ export type AgentDecideInput<TEvent extends EventObject> = Omit<
   /**
    * The previous decision made by the agent.
    */
-  prevDecision?: AgentDecision<TEvent>;
+  prevDecision?: AgentDecision<TAgent>;
 
   /**
    * The total cost of the path to the goal state.
    */
-  costFunction?: CostFunction<TEvent>;
+  costFunction?: CostFunction<TAgent>;
 
   /**
    * The maximum number of attempts to make a decision.
@@ -71,22 +71,22 @@ export type AgentDecideInput<TEvent extends EventObject> = Omit<
   maxAttempts?: number;
 };
 
-export type AgentStep<TEvent extends EventObject> = {
+export type AgentStep<TAgent extends AnyAgent> = {
   /** The event to take */
-  event: TEvent;
+  event: EventFromAgent<TAgent>;
   /** The next expected state after taking the event */
-  state: ObservedState | undefined;
+  state: ObservedState<TAgent> | undefined;
 };
 
-export type AgentPath<TEvent extends EventObject> = {
+export type AgentPath<TAgent extends AnyAgent> = {
   /** The expected ending state of the path */
-  state: ObservedState | undefined;
+  state: ObservedState<TAgent> | undefined;
   /** The steps to reach the ending state */
-  steps: Array<AgentStep<TEvent>>;
+  steps: Array<AgentStep<TAgent>>;
   weight?: number;
 };
 
-export type AgentDecision<TEvent extends EventObject> = {
+export type AgentDecision<TAgent extends AnyAgent> = {
   /**
    * The strategy used to generate the decision
    */
@@ -95,17 +95,17 @@ export type AgentDecision<TEvent extends EventObject> = {
   /**
    * The ending state of the decision.
    */
-  goalState: ObservedState | undefined;
+  goalState: ObservedState<TAgent> | undefined;
   /**
    * The next event that the agent decided needs to occur to achieve the `goal`.
    *
    * This next event is chosen from the
    */
-  nextEvent: TEvent | undefined;
+  nextEvent: EventFromAgent<TAgent> | undefined;
   /**
    * The paths that the agent can take to achieve the goal.
    */
-  paths: AgentPath<TEvent>[];
+  paths: AgentPath<TAgent>[];
   episodeId: string;
   timestamp: number;
   // result: GenerateObjectResult<any>;
@@ -118,12 +118,12 @@ export interface TransitionData {
   target?: any;
 }
 
-export type PromptTemplate<TEvents extends EventObject> = (data: {
+export type PromptTemplate<TAgent extends AnyAgent> = (data: {
   goal: string;
   /**
    * The observed state
    */
-  state?: ObservedState;
+  state?: ObservedState<TAgent>;
   /**
    * The state machine model of the observed environment
    */
@@ -139,29 +139,29 @@ export type PromptTemplate<TEvents extends EventObject> = (data: {
   observations?: AgentObservation<any>[]; // TODO
   feedback?: AgentFeedback[];
   messages?: AgentMessage[];
-  decisions?: AgentDecision<TEvents>[];
+  decisions?: AgentDecision<TAgent>[];
 }) => string;
 
-export type AgentStrategy<T extends AnyAgent> = (
-  agent: T,
-  input: AgentDecideInput<EventsFromAgent<T>>
-) => Promise<AgentDecision<EventsFromAgent<T>> | undefined>;
+export type AgentStrategy<TAgent extends AnyAgent> = (
+  agent: TAgent,
+  input: AgentDecideInput<EventFromAgent<TAgent>>
+) => Promise<AgentDecision<TAgent> | undefined>;
 
 export type AgentInteractInput<T extends AnyAgent> = Omit<
   AgentDecideOptions<T>,
   'state'
 >;
 
-export type AgentDecideOptions<T extends AnyAgent> = {
+export type AgentDecideOptions<TAgent extends AnyAgent> = {
   goal: string;
-  state: ObservedState;
+  state: ObservedState<TAgent>;
   context?: never;
   machine?: AnyStateMachine;
   model?: LanguageModel;
   execute?: (event: AnyEventObject) => Promise<void>;
-  strategy?: AgentStrategy<T>;
+  strategy?: AgentStrategy<TAgent>;
   events?: ZodEventMapping;
-  allowedEvents?: Array<EventsFromAgent<T>['type']>;
+  allowedEvents?: Array<EventFromAgent<TAgent>['type']>;
   /**
    * The maximum number of times the agent will attempt to make a decision.
    * Defaults to 2.
@@ -340,11 +340,11 @@ export interface AgentObservation<TActor extends ActorRefLike> {
   timestamp: number;
 }
 
-export interface AgentObservationInput {
+export interface AgentObservationInput<TAgent extends AnyAgent> {
   id?: string;
-  prevState?: ObservedState;
+  prevState?: ObservedState<TAgent>;
   event?: AnyEventObject;
-  state: ObservedState;
+  state: ObservedState<TAgent>;
   machine?: AnyStateMachine;
   timestamp?: number;
 }
@@ -355,12 +355,12 @@ export type AgentDecisionInput = {
   context?: Record<string, any>;
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
-export type AgentDecisionLogic<TEvents extends EventObject> = PromiseActorLogic<
-  AgentDecision<TEvents> | undefined,
+export type AgentDecisionLogic<TAgent extends AnyAgent> = PromiseActorLogic<
+  AgentDecision<TAgent> | undefined,
   AgentDecisionInput | string
 >;
 
-export type AgentEmitted<TEvents extends EventObject> =
+export type AgentEmitted<TAgent extends AnyAgent> =
   | {
       type: 'feedback';
       feedback: AgentFeedback;
@@ -375,11 +375,11 @@ export type AgentEmitted<TEvents extends EventObject> =
     }
   | {
       type: 'decision';
-      decision: AgentDecision<TEvents>;
+      decision: AgentDecision<TAgent>;
     };
 
-export type AgentLogic<TEvents extends EventObject> = ActorLogic<
-  TransitionSnapshot<AgentMemoryContext>,
+export type AgentLogic<TAgent extends AnyAgent> = ActorLogic<
+  TransitionSnapshot<AgentMemoryContext<TAgent>>,
   | {
       type: 'agent.feedback';
       feedback: AgentFeedback;
@@ -394,19 +394,21 @@ export type AgentLogic<TEvents extends EventObject> = ActorLogic<
     }
   | {
       type: 'agent.decision';
-      decision: AgentDecision<TEvents>;
+      decision: AgentDecision<TAgent>;
     },
   any, // TODO: input
   any,
-  AgentEmitted<TEvents>
+  AgentEmitted<TAgent>
 >;
 
 export type EventsFromZodEventMapping<TEventSchemas extends ZodEventMapping> =
-  Values<{
-    [K in keyof TEventSchemas & string]: {
-      type: K;
-    } & TypeOf<TEventSchemas[K]>;
-  }>;
+  Compute<
+    Values<{
+      [K in keyof TEventSchemas & string]: {
+        type: K;
+      } & TypeOf<TEventSchemas[K]>;
+    }>
+  >;
 
 export type ContextFromZodContextMapping<
   TContextSchema extends ZodContextMapping
@@ -418,27 +420,27 @@ export type AnyAgent = Agent<any, any, any, any>;
 
 export type FromAgent<T> = T | ((agent: AnyAgent) => T | Promise<T>);
 
-export type CommonTextOptions = {
+export type CommonTextOptions<TAgent extends AnyAgent> = {
   prompt: FromAgent<string>;
   model?: LanguageModel;
-  state?: ObservedState;
+  state?: ObservedState<TAgent>;
   messages?: FromAgent<CoreMessage[]>;
   template?: PromptTemplate<any>;
 };
 
-export type AgentGenerateTextOptions = Omit<
+export type AgentGenerateTextOptions<TAgent extends AnyAgent> = Omit<
   GenerateTextOptions,
   'model' | 'prompt' | 'messages'
 > &
-  CommonTextOptions;
+  CommonTextOptions<TAgent>;
 
-export type AgentStreamTextOptions = Omit<
+export type AgentStreamTextOptions<TAgent extends AnyAgent> = Omit<
   StreamTextOptions,
   'model' | 'prompt' | 'messages'
 > &
-  CommonTextOptions;
+  CommonTextOptions<TAgent>;
 
-export interface ObservedState {
+export interface ObservedState<TAgent extends AnyAgent> {
   /**
    * The current state value of the state machine, e.g.
    * `"loading"` or `"processing"` or `"ready"`
@@ -447,7 +449,7 @@ export interface ObservedState {
   /**
    * Additional contextual data related to the current state
    */
-  context?: Record<string, unknown>;
+  context?: ContextFromAgent<TAgent>;
 }
 
 export type ObservedStateFrom<TActor extends ActorRefLike> = Pick<
@@ -455,24 +457,24 @@ export type ObservedStateFrom<TActor extends ActorRefLike> = Pick<
   'value' | 'context'
 >;
 
-export type AgentMemoryContext = {
-  observations: AgentObservation<any>[]; // TODO
+export type AgentMemoryContext<TAgent extends AnyAgent> = {
+  observations: AgentObservation<TAgent>[]; // TODO
   messages: AgentMessage[];
-  decisions: AgentDecision<any>[];
+  decisions: AgentDecision<TAgent>[];
   feedback: AgentFeedback[];
 };
 
-export interface AgentLongTermMemory {
-  get<K extends keyof AgentMemoryContext>(
+export interface AgentLongTermMemory<TAgent extends AnyAgent> {
+  get<K extends keyof AgentMemoryContext<TAgent>>(
     key: K
-  ): Promise<AgentMemoryContext[K]>;
-  append<K extends keyof AgentMemoryContext>(
+  ): Promise<AgentMemoryContext<TAgent>[K]>;
+  append<K extends keyof AgentMemoryContext<TAgent>>(
     key: K,
-    item: AgentMemoryContext[K][0]
+    item: AgentMemoryContext<TAgent>[K][0]
   ): Promise<void>;
-  set<K extends keyof AgentMemoryContext>(
+  set<K extends keyof AgentMemoryContext<TAgent>>(
     key: K,
-    items: AgentMemoryContext[K]
+    items: AgentMemoryContext<TAgent>[K]
   ): Promise<void>;
 }
 
@@ -480,7 +482,7 @@ export type Compute<A extends any> = { [K in keyof A]: A[K] } & unknown;
 
 export type MaybePromise<T> = T | Promise<T>;
 
-export type EventsFromAgent<T extends AnyAgent> = T extends Agent<
+export type EventFromAgent<T extends AnyAgent> = T extends Agent<
   infer _,
   infer __,
   infer TEvents,

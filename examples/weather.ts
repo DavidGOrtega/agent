@@ -1,4 +1,4 @@
-import { createAgent, EventsFromAgent, fromDecision } from '../src';
+import { createAgent, EventFromAgent, fromDecision } from '../src';
 import { assign, createActor, fromPromise, log, setup } from 'xstate';
 import { fromTerminal } from './helpers/helpers';
 import { z } from 'zod';
@@ -78,7 +78,7 @@ const machine = setup({
       count: number;
       result: string | null;
     },
-    events: {} as EventsFromAgent<typeof agent>,
+    events: {} as EventFromAgent<typeof agent>,
   },
   actors: {
     agent: fromDecision(agent),
