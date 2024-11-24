@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import Ajv from 'ajv';
 import { AnyMachineSnapshot } from 'xstate';
+import { randomId } from '../utils';
 
 const ajv = new Ajv();
 
@@ -165,6 +166,7 @@ Examples:
   const nextStep = leastWeightPath?.steps[0];
 
   return {
+    id: randomId(),
     strategy: 'shortestPath',
     episodeId: agent.episodeId,
     goal: input.goal,

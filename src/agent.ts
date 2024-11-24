@@ -391,17 +391,19 @@ export class Agent<
     ) {
       const observation = agent.addObservation(observationInput);
 
-      const input = getInput?.(observation);
+      const interactInput = getInput?.(observation);
 
-      if (input) {
-        const res = await agentDecide(agent, {
+      if (interactInput) {
+        const decision = await agentDecide(agent, {
           machine,
           state: observation.state,
-          ...input,
+          ...interactInput,
         });
 
-        if (res?.nextEvent) {
-          actorRef.send(res.nextEvent);
+        if (decision?.nextEvent) {
+          // @ts-ignore
+          decision.nextEvent['_decision'] = decision.id;
+          actorRef.send(decision.nextEvent);
         }
       }
 
@@ -420,11 +422,20 @@ export class Agent<
               return;
             }
 
+            const decisionId = inspEvent.event['_decision'] as
+              | string
+              | undefined;
+
+            const decision = decisionId
+              ? agent.getDecisions().find((d) => d.id === decisionId)
+              : undefined;
+
             const observationInput = {
               event: inspEvent.event,
               prevState,
               state: inspEvent.snapshot as any,
               machine: (actorRef as any).src,
+              goal: decision?.goal,
             } satisfies AgentObservationInput<any>;
 
             await handleObservation(observationInput);
@@ -439,6 +450,7 @@ export class Agent<
         event: undefined,
         state: actorRef.getSnapshot(),
         machine: (actorRef as any).src,
+        goal: undefined,
       });
     }
 
@@ -464,11 +476,19 @@ export class Agent<
               return;
             }
 
+            const decisionId = inspEvent.event['_decision'] as
+              | string
+              | undefined;
+            const decision = decisionId
+              ? this.getDecisions().find((d) => d.id === decisionId)
+              : undefined;
+
             const observationInput = {
               event: inspEvent.event,
               prevState,
               state: inspEvent.snapshot as any,
               machine: (actorRef as any).src,
+              goal: decision?.goal,
             } satisfies AgentObservationInput<this>;
 
             prevState = observationInput.state;

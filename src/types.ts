@@ -87,6 +87,7 @@ export type AgentPath<TAgent extends AnyAgent> = {
 };
 
 export type AgentDecision<TAgent extends AnyAgent> = {
+  id: string;
   /**
    * The strategy used to generate the decision
    */
@@ -170,7 +171,6 @@ export type AgentDecideOptions<TAgent extends AnyAgent> = {
 } & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
 
 export interface AgentFeedback {
-  goal: string;
   observationId: string;
   score: number;
   comment: string | undefined;
@@ -183,7 +183,6 @@ export interface AgentFeedback {
 }
 
 export interface AgentFeedbackInput {
-  goal: string;
   observationId: string;
   score: number;
   comment?: string;
@@ -331,7 +330,7 @@ export type AgentMessageInput = CoreMessage & {
 
 export interface AgentObservation<TActor extends ActorRefLike> {
   id: string;
-  // TODO: goal
+  goal?: string;
   prevState: SnapshotFrom<TActor> | undefined;
   event: EventFrom<TActor> | undefined;
   state: SnapshotFrom<TActor>;
@@ -347,6 +346,7 @@ export interface AgentObservationInput<TAgent extends AnyAgent> {
   state: ObservedState<TAgent>;
   machine?: AnyStateMachine;
   timestamp?: number;
+  goal: string | undefined;
 }
 
 export type AgentDecisionInput = {

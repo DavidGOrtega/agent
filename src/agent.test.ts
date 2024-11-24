@@ -70,28 +70,24 @@ test('agent.addFeedback() adds to feedback', () => {
     model: {} as any,
   });
 
-  const feedback = agent.addFeedback({
-    score: -1,
+  const obs = agent.addObservation({
+    prevState: { value: 'playing' },
+    state: { value: 'lost' },
+    event: { type: 'play', position: 3 },
     goal: 'Win the game',
-    observationId: 'obs-1',
+  });
+
+  const feedback = agent.addFeedback({
+    score: 0,
+    observationId: obs.id,
   });
 
   expect(feedback.episodeId).toEqual(agent.episodeId);
 
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      score: -1,
-      goal: 'Win the game',
-      observationId: 'obs-1',
-      episodeId: expect.any(String),
-      timestamp: expect.any(Number),
-    })
-  );
-  expect(agent.getFeedback()).toContainEqual(
-    expect.objectContaining({
-      score: -1,
-      goal: 'Win the game',
-      observationId: 'obs-1',
+      score: 0,
+      observationId: obs.id,
       episodeId: expect.any(String),
       timestamp: expect.any(Number),
     })
@@ -109,6 +105,7 @@ test('agent.addObservation() adds to observations', () => {
     prevState: { value: 'playing', context: {} },
     event: { type: 'play', position: 3 },
     state: { value: 'lost', context: {} },
+    goal: 'Win the game',
   });
 
   expect(observation.episodeId).toEqual(agent.episodeId);
@@ -133,6 +130,7 @@ test('agent.addObservation() adds to observations (initial state)', () => {
 
   const observation = agent.addObservation({
     state: { value: 'lost' },
+    goal: 'Win the game',
   });
 
   expect(observation.episodeId).toEqual(agent.episodeId);
@@ -170,6 +168,7 @@ test('agent.addObservation() adds to observations with machine hash', () => {
     event: { type: 'play', position: 3 },
     state: { value: 'lost', context: {} },
     machine,
+    goal: 'Win the game',
   });
 
   expect(observation.episodeId).toEqual(agent.episodeId);
@@ -197,11 +196,11 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
     state: {
       value: 'playing',
     },
+    goal: 'Win the game',
   });
 
   const feedback = agent.addFeedback({
-    score: -1,
-    goal: 'Win the game',
+    score: 0,
     observationId: observation.id,
   });
 
@@ -209,8 +208,7 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
 
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      score: -1,
-      goal: 'Win the game',
+      score: 0,
       observationId: observation.id,
       episodeId: expect.any(String),
       timestamp: expect.any(Number),
@@ -218,8 +216,7 @@ test('agent.addFeedback() adds to feedback (with observation)', () => {
   );
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
-      score: -1,
-      goal: 'Win the game',
+      score: 0,
       observationId: observation.id,
       episodeId: expect.any(String),
       timestamp: expect.any(Number),
@@ -286,7 +283,6 @@ test('You can listen for feedback events', () => {
 
   agent.addFeedback({
     score: -1,
-    goal: 'Win the game',
     observationId: 'obs-1',
   });
 
@@ -431,6 +427,7 @@ test('agent.getDecisions() returns decisions from context', () => {
     model: {} as any,
     strategy: async (agent) => {
       return {
+        id: Date.now().toString(),
         episodeId: agent.episodeId,
         strategy: 'test-strategy',
         goal: '',
