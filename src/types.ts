@@ -40,6 +40,10 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
    */
   state: ObservedState<TAgent>;
   /**
+   * The context to provide in the prompt to the agent. This overrides the `state.context`.
+   */
+  context?: Record<string, any>;
+  /**
    * The goal for the agent to accomplish.
    * The agent will make a decision based on this goal.
    */
@@ -54,10 +58,6 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
    * is interacting with.
    */
   machine?: AnyStateMachine;
-  /**
-   * The previous decision made by the agent.
-   */
-  prevDecision?: AgentDecision<TAgent>;
 
   /**
    * The total cost of the path to the goal state.
@@ -124,7 +124,8 @@ export type PromptTemplate<TAgent extends AnyAgent> = (data: {
   /**
    * The observed state
    */
-  state?: ObservedState<TAgent>;
+  stateValue?: any;
+  context?: Record<string, any>;
   /**
    * The state machine model of the observed environment
    */
@@ -151,12 +152,17 @@ export type AgentStrategy<TAgent extends AnyAgent> = (
 export type AgentInteractInput<T extends AnyAgent> = Omit<
   AgentDecideOptions<T>,
   'state'
->;
+> & {
+  state?: never;
+};
 
 export type AgentDecideOptions<TAgent extends AnyAgent> = {
   goal: string;
   state: ObservedState<TAgent>;
-  context?: never;
+  /**
+   * The context to provide in the prompt to the agent. This overrides the `state.context`.
+   */
+  context?: Record<string, any>;
   machine?: AnyStateMachine;
   model?: LanguageModel;
   execute?: (event: AnyEventObject) => Promise<void>;
@@ -423,9 +429,9 @@ export type FromAgent<T> = T | ((agent: AnyAgent) => T | Promise<T>);
 export type CommonTextOptions<TAgent extends AnyAgent> = {
   prompt: FromAgent<string>;
   model?: LanguageModel;
-  state?: ObservedState<TAgent>;
   messages?: FromAgent<CoreMessage[]>;
   template?: PromptTemplate<any>;
+  context?: Record<string, any>;
 };
 
 export type AgentGenerateTextOptions<TAgent extends AnyAgent> = Omit<

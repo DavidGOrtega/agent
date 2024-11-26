@@ -121,7 +121,6 @@ agent.interact(actor, ({ state }) => {
       do not try to answer the question directly or gather information.
       Instead, immediately transfer them to the billing or technical team by asking the user to hold for a moment.
       Otherwise, just respond conversationally.`,
-      state,
     };
   }
 
@@ -129,7 +128,6 @@ agent.interact(actor, ({ state }) => {
     return {
       goal: `The following text is a response from a customer support representative. Extract whether they want to refund the user or not.`,
       system: `Your job is to detect whether a billing support representative wants to refund the user.`,
-      state,
     };
   }
 
@@ -137,7 +135,6 @@ agent.interact(actor, ({ state }) => {
     return {
       goal: 'Solve the customer issue.',
       system: `You are an expert at diagnosing technical computer issues. You work for a company called LangCorp that sells computers. Help the user to the best of your ability, but be concise in your responses.`,
-      state,
     };
   }
 
@@ -145,7 +142,6 @@ agent.interact(actor, ({ state }) => {
     return {
       goal: 'You are a customer support agent that is ending the conversation with the customer. Respond politely and thank them for their time.',
       system: `You are a customer support agent that is ending the conversation with the customer. Respond politely and thank them for their time.`,
-      state,
     };
   }
 });

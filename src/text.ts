@@ -71,7 +71,7 @@ export function fromTextStream<TAgent extends AnyAgent>(
           : await input.prompt(agent);
       const promptWithContext = template({
         goal,
-        state: input.state,
+        context: input.context,
       });
       const messages = await getMessages(agent, promptWithContext, input);
       const result = await streamText({
@@ -130,7 +130,7 @@ export function fromText<TAgent extends AnyAgent>(
 
     const promptWithContext = template({
       goal,
-      state: input.state,
+      context: input.context,
     });
 
     const messages = await getMessages(agent, promptWithContext, input);

@@ -160,11 +160,8 @@ agent.interact(actor, ({ state }) => {
   if (state.matches('decide')) {
     return {
       goal: `Decide what to do based on the given location, which may or may not be a location`,
-      state: {
-        ...state,
-        context: {
-          location: state.context.location,
-        },
+      context: {
+        location: state.context.location,
       },
     };
   }
@@ -172,7 +169,10 @@ agent.interact(actor, ({ state }) => {
   if (state.matches('reportWeather')) {
     return {
       goal: `Report the weather for the given location`,
-      state,
+      context: {
+        location: state.context.location,
+        result: state.context.result,
+      },
     };
   }
 });

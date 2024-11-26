@@ -126,7 +126,6 @@ agent.interact(actor, ({ state }) => {
   if (state.matches('processing')) {
     return {
       goal: 'Determine if user is asking about weather and for which location. If so, get the weather. Otherwise, respond to the user.',
-      state,
       messages: agent.getMessages(),
     };
   }
@@ -134,7 +133,6 @@ agent.interact(actor, ({ state }) => {
   if (state.matches('responding')) {
     return {
       goal: 'Provide a natural response about the weather in ${context.location}',
-      state,
       messages: agent.getMessages(),
     };
   }
