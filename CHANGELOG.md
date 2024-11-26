@@ -1,5 +1,44 @@
 # @statelyai/agent
 
+## 2.0.0-next.3
+
+### Major Changes
+
+- [`bf6b468`](https://github.com/statelyai/agent/commit/bf6b468d66d58bf53629d70d1b2a273948c9ba1e) Thanks [@davidkpiano](https://github.com/davidkpiano)! - The `state` can no longer be specified in `agent.interact(...)`, since the actual state value is already observed and passed to the `strategy` function.
+
+  The `context` provided to agent decision functions, like `agent.decide({ context })` and in `agent.interact(...)`, is now used solely to override the `state.context` provided to the prompt template.
+
+### Minor Changes
+
+- [`1287a6d`](https://github.com/statelyai/agent/commit/1287a6d405ed3bd6be37a61aaa9d54d963b5b1cd) Thanks [@davidkpiano](https://github.com/davidkpiano)! - Add `score` and `comment` fields for feedback
+
+### Patch Changes
+
+- [`5b5a8e7`](https://github.com/statelyai/agent/commit/5b5a8e7012d550f5b05d0fefc9eade7731202577) Thanks [@davidkpiano](https://github.com/davidkpiano)! - The `score` is now required for feedback:
+
+  ```ts
+  agent.addFeedback({
+    score: 0.5,
+    goal: "Win the game",
+    observationId: "...",
+  });
+  ```
+
+- [`5b5a8e7`](https://github.com/statelyai/agent/commit/5b5a8e7012d550f5b05d0fefc9eade7731202577) Thanks [@davidkpiano](https://github.com/davidkpiano)! - The entire observed `state` must be provided, instead of only `context`, for any agent decision making functions:
+
+  ```ts
+  agent.interact(actor, (obs) => {
+    // ...
+    return {
+      goal: "Some goal",
+      // instead of context
+      state: obs.state,
+    };
+  });
+  ```
+
+- [`9d65d71`](https://github.com/statelyai/agent/commit/9d65d71e41f9f0f84f637ea7e0a0e22ccf67f264) Thanks [@davidkpiano](https://github.com/davidkpiano)! - Remove `goal` from feedback input
+
 ## 2.0.0-next.2
 
 ### Minor Changes
