@@ -1,5 +1,5 @@
 import { test, expect, vi } from 'vitest';
-import { createAgent, TypesFromAgent } from './';
+import { AgentDecision, createAgent, TypesFromAgent } from './';
 import { createActor, createMachine } from 'xstate';
 import { LanguageModelV1CallOptions } from 'ai';
 import { z } from 'zod';
@@ -66,15 +66,30 @@ test('agent.addMessage() adds to message history', () => {
 test('agent.addFeedback() adds to feedback', () => {
   const agent = createAgent({
     id: 'test',
-    events: {},
+    events: {
+      play: z.object({
+        position: z.number(),
+      }),
+    },
     model: {} as any,
   });
 
-  const obs = agent.addObservation({
-    prevState: { value: 'playing' },
-    state: { value: 'lost' },
-    event: { type: 'play', position: 3 },
+  const decision: AgentDecision<typeof agent> = {
     goal: 'Win the game',
+    episodeId: agent.episodeId,
+    goalState: { value: 'won' },
+    id: 'decision-1',
+    nextEvent: { type: 'play', position: 3 },
+    paths: [],
+    strategy: 'simple',
+    timestamp: Date.now(),
+  };
+
+  const obs = agent.addObservation({
+    decisionId: decision.id,
+    prevState: { value: 'playing' },
+    event: { type: 'play', position: 3 },
+    state: { value: 'lost' },
   });
 
   const feedback = agent.addFeedback({
@@ -167,7 +182,6 @@ test('agent.addObservation() adds to observations with machine hash', () => {
     prevState: { value: 'playing', context: {} },
     event: { type: 'play', position: 3 },
     state: { value: 'lost', context: {} },
-    machine,
     goal: 'Win the game',
   });
 
@@ -178,7 +192,6 @@ test('agent.addObservation() adds to observations with machine hash', () => {
       prevState: { value: 'playing', context: {} },
       event: { type: 'play', position: 3 },
       state: { value: 'lost', context: {} },
-      machineHash: expect.any(String),
       episodeId: expect.any(String),
       timestamp: expect.any(Number),
     })
@@ -503,7 +516,6 @@ test('agent.observe() adds observations from actor snapshots', () => {
   expect(agent.getObservations()).toContainEqual(
     expect.objectContaining({
       state: expect.objectContaining({ value: 'idle' }),
-      machineHash: expect.any(String),
     })
   );
 
@@ -512,9 +524,95 @@ test('agent.observe() adds observations from actor snapshots', () => {
       prevState: expect.objectContaining({ value: 'idle' }),
       event: { type: 'START' },
       state: expect.objectContaining({ value: 'running' }),
-      machineHash: expect.any(String),
     })
   );
 
   subscription.unsubscribe();
+});
+
+test('agent.addObservation() accepts custom episodeId', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const customEpisodeId = 'custom-episode-123';
+  const observation = agent.addObservation({
+    state: { value: 'playing' },
+    goal: 'Win the game',
+    episodeId: customEpisodeId,
+  });
+
+  expect(observation.episodeId).toEqual(customEpisodeId);
+  expect(agent.getObservations()).toContainEqual(
+    expect.objectContaining({
+      episodeId: customEpisodeId,
+    })
+  );
+});
+
+test('agent.addFeedback() accepts custom episodeId', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const customEpisodeId = 'custom-episode-123';
+  const feedback = agent.addFeedback({
+    score: 1,
+    observationId: 'obs-1',
+    episodeId: customEpisodeId,
+  });
+
+  expect(feedback.episodeId).toEqual(customEpisodeId);
+  expect(agent.getFeedback()).toContainEqual(
+    expect.objectContaining({
+      episodeId: customEpisodeId,
+    })
+  );
+});
+
+test('agent.addObservation() accepts decisionId', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const decisionId = 'decision-123';
+  const observation = agent.addObservation({
+    state: { value: 'playing' },
+    goal: 'Win the game',
+    decisionId,
+  });
+
+  expect(observation.decisionId).toEqual(decisionId);
+  expect(agent.getObservations()).toContainEqual(
+    expect.objectContaining({
+      decisionId,
+    })
+  );
+});
+
+test('agent.addFeedback() accepts decisionId', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const decisionId = 'decision-123';
+  const feedback = agent.addFeedback({
+    score: 1,
+    decisionId,
+  });
+
+  expect(feedback.decisionId).toEqual(decisionId);
+  expect(agent.getFeedback()).toContainEqual(
+    expect.objectContaining({
+      decisionId,
+    })
+  );
 });

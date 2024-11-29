@@ -1,7 +1,6 @@
 import { AnyActor, AnyMachineSnapshot, fromPromise } from 'xstate';
 import {
   AnyAgent,
-  AgentDecideOptions,
   AgentDecisionLogic,
   AgentDecision,
   AgentDecideInput,
@@ -10,15 +9,13 @@ import {
 } from './types';
 import { getTransitions } from './utils';
 import { CoreMessage, CoreTool, tool } from 'ai';
+import { ZodEventMapping } from './schemas';
 
 export async function agentDecide<TAgent extends AnyAgent>(
   agent: TAgent,
-  options: AgentDecideOptions<TAgent>
+  options: AgentDecideInput<TAgent>
 ): Promise<AgentDecision<TAgent> | undefined> {
-  const resolvedOptions = {
-    ...agent.defaultOptions,
-    ...options,
-  };
+  const resolvedOptions = options;
   const {
     strategy = agent.strategy,
     goal,
@@ -28,6 +25,8 @@ export async function agentDecide<TAgent extends AnyAgent>(
     machine,
     model = agent.model,
     messages,
+    episodeId = agent.episodeId,
+    maxAttempts = 2,
     ...otherDecideInput
   } = resolvedOptions;
 
@@ -41,8 +40,6 @@ export async function agentDecide<TAgent extends AnyAgent>(
 
   let attempts = 0;
 
-  const maxAttempts = resolvedOptions.maxAttempts ?? 2;
-
   let decision: AgentDecision<any> | undefined;
 
   const minimalState = {
@@ -52,6 +49,7 @@ export async function agentDecide<TAgent extends AnyAgent>(
 
   while (attempts++ < maxAttempts) {
     decision = await strategy(agent, {
+      episodeId,
       model,
       goal,
       events: filteredEventSchemas,
@@ -63,7 +61,6 @@ export async function agentDecide<TAgent extends AnyAgent>(
 
     if (decision?.nextEvent) {
       agent.addDecision(decision);
-      await resolvedOptions.execute?.(decision.nextEvent);
       break;
     }
   }
@@ -88,37 +85,38 @@ export function fromDecision<T extends AnyAgent>(
       ...inputObject,
     };
 
-    const decision = await agentDecide(agent, {
+    const decision = await agentDecide<typeof agent>(agent, {
       machine: (parentRef as AnyActor).logic,
       state: snapshot,
-      execute: async (event) => {
-        parentRef.send(event);
-      },
       ...resolvedInput,
       // @ts-ignore
       messages: resolvedInput.messages,
     });
 
+    if (decision?.nextEvent) {
+      parentRef.send(decision.nextEvent);
+    }
+
     return decision;
   }) as AgentDecisionLogic<any>;
 }
 
-export function getToolMap<T extends AnyAgent>(
-  _agent: T,
+export function getToolMap<TAgent extends AnyAgent>(
+  agent: TAgent,
   input: AgentDecideInput<any>
 ): Record<string, CoreTool<any, any>> | undefined {
+  const events = input.events ?? (agent.events as ZodEventMapping);
   // Get all of the possible next transitions
   const transitions: TransitionData[] = input.machine
     ? getTransitions(input.state, input.machine)
-    : Object.entries(input.events).map(([eventType, { description }]) => ({
+    : Object.entries(events).map(([eventType, { description }]) => ({
         eventType,
         description,
       }));
 
   // Only keep the transitions that match the event types that are in the event mapping
   // TODO: allow for custom filters
-  const filter = (eventType: string) =>
-    Object.keys(input.events).includes(eventType);
+  const filter = (eventType: string) => Object.keys(events).includes(eventType);
 
   // Mapping of each event type (e.g. "mouse.click")
   // to a valid function name (e.g. "mouse_click")

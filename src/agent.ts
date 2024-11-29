@@ -22,13 +22,13 @@ import {
   AgentMessageInput,
   AgentFeedbackInput,
   AgentDecision,
-  AgentDecideOptions,
   AnyAgent,
   AgentInteractInput,
+  AgentDecideInput,
 } from './types';
-import { simpleStrategy } from './strategies/simple';
+import { simpleStrategy } from './strategies/simpleStrategy';
 import { agentDecide } from './decide';
-import { getMachineHash, isActorRef, isMachineActor, randomId } from './utils';
+import { isActorRef, isMachineActor, randomId } from './utils';
 import {
   experimental_wrapLanguageModel,
   LanguageModel,
@@ -184,7 +184,6 @@ export class Agent<
   // };
   public model: LanguageModel;
   public memory: AgentLongTermMemory<this> | undefined;
-  public defaultOptions: AgentDecideOptions<AnyAgent> | undefined; // todo
 
   constructor({
     logic = agentLogic as AgentLogic<any>,
@@ -262,7 +261,7 @@ export class Agent<
       comment: feedbackInput.comment ?? undefined,
       attributes: { ...feedbackInput.attributes },
       timestamp: feedbackInput.timestamp ?? Date.now(),
-      episodeId: this.episodeId,
+      episodeId: feedbackInput.episodeId ?? this.episodeId,
     } satisfies AgentFeedback;
     this.send({
       type: 'agent.feedback',
@@ -287,11 +286,12 @@ export class Agent<
       event,
       state,
       id: observationInput.id ?? randomId(),
-      episodeId: this.episodeId,
+      episodeId: observationInput.episodeId ?? this.episodeId,
       timestamp: observationInput.timestamp ?? Date.now(),
-      machineHash: observationInput.machine
-        ? getMachineHash(observationInput.machine)
-        : undefined,
+      decisionId: observationInput.decisionId,
+      // machineHash: observationInput.machine
+      //   ? getMachineHash(observationInput.machine)
+      //   : undefined,
     } satisfies AgentObservation<any>;
 
     this.send({
@@ -434,8 +434,8 @@ export class Agent<
               event: inspEvent.event,
               prevState,
               state: inspEvent.snapshot as any,
-              machine: (actorRef as any).src,
               goal: decision?.goal,
+              decisionId,
             } satisfies AgentObservationInput<any>;
 
             await handleObservation(observationInput);
@@ -446,11 +446,10 @@ export class Agent<
     // If actor already started, interact with current state
     if ((actorRef as any)._processingStatus === 1) {
       handleObservation({
+        decisionId: undefined,
         prevState: undefined,
         event: undefined,
         state: actorRef.getSnapshot(),
-        machine: (actorRef as any).src,
-        goal: undefined,
       });
     }
 
@@ -484,10 +483,10 @@ export class Agent<
               : undefined;
 
             const observationInput = {
+              decisionId,
               event: inspEvent.event,
               prevState,
               state: inspEvent.snapshot as any,
-              machine: (actorRef as any).src,
               goal: decision?.goal,
             } satisfies AgentObservationInput<this>;
 
@@ -517,8 +516,8 @@ export class Agent<
    * - Additional `context`
    */
   public async decide(
-    opts: AgentDecideOptions<this>
+    input: AgentDecideInput<this>
   ): Promise<AgentDecision<this> | undefined> {
-    return agentDecide(this, opts);
+    return agentDecide(this, input);
   }
 }

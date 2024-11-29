@@ -6,7 +6,7 @@ import {
   PromptTemplate,
 } from '../types';
 import { getMessages } from '../text';
-import { simpleStrategy } from './simple';
+import { simpleStrategy } from './simpleStrategy';
 import { convertToXml } from '../utils';
 
 const chainOfThoughtPromptTemplate: PromptTemplate<any> = ({

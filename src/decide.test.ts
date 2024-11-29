@@ -322,3 +322,25 @@ test.each([['MOVE'], ['FORFEIT']] as const)(
     expect(decision?.nextEvent?.type).toEqual(allowedEventType);
   }
 );
+
+test('agent.decide() accepts custom episodeId', async () => {
+  const model = new MockLanguageModelV1({
+    doGenerate,
+  });
+  const agent = createAgent({
+    id: 'test',
+    events: {
+      WIN: z.object({}),
+    },
+    model,
+  });
+
+  const customEpisodeId = 'custom-episode-123';
+  const decision = await agent.decide({
+    goal: 'Win the game',
+    state: { value: 'playing' },
+    episodeId: customEpisodeId,
+  });
+
+  expect(decision?.episodeId).toEqual(customEpisodeId);
+});

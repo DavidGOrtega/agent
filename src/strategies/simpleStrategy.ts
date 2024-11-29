@@ -84,7 +84,7 @@ export async function simpleStrategy<T extends AnyAgent>(
     goal: input.goal,
     goalState: input.state,
     nextEvent: singleResult.result,
-    episodeId: agent.episodeId,
+    episodeId: input.episodeId ?? agent.episodeId,
     timestamp: Date.now(),
     paths: [
       {

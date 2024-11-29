@@ -116,7 +116,6 @@ export function fromText<TAgent extends AnyAgent>(
   }
 > {
   const resolvedOptions = {
-    ...agent.defaultOptions,
     ...options,
   };
 

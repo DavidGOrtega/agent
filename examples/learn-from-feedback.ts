@@ -80,7 +80,7 @@ Achieve the goal. Consider both exploring unknown actions (high exploration_valu
 
         if (decision?.nextEvent?.type === 'submit') {
           const observation = await agent.addObservation({
-            goal: decision.goal,
+            decisionId: decision.id,
             prevState: { value: 'editing' },
             event: { type: 'submit' },
             state: { value: 'editing' },
@@ -96,7 +96,7 @@ Achieve the goal. Consider both exploring unknown actions (high exploration_valu
           status = 'submitted';
 
           await agent.addObservation({
-            goal: decision.goal,
+            decisionId: decision.id,
             prevState: { value: 'editing' },
             event: { type: 'pressEnter' },
             state: { value: 'submitted' },

@@ -33,8 +33,9 @@ export type CostFunction<TAgent extends AnyAgent> = (
 
 export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
   AgentGenerateTextOptions<TAgent>,
-  'prompt' | 'tools'
+  'model' | 'prompt' | 'tools'
 > & {
+  episodeId?: string;
   /**
    * The currently observed state.
    */
@@ -52,7 +53,8 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
    * The events that the agent can trigger. This is a mapping of
    * event types to Zod event schemas.
    */
-  events: ZodEventMapping;
+  events?: ZodEventMapping;
+  allowedEvents?: Array<EventFromAgent<TAgent>['type']>;
   /**
    * The state machine that represents the environment the agent
    * is interacting with.
@@ -69,6 +71,8 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
    * Defaults to 2.
    */
   maxAttempts?: number;
+  strategy?: AgentStrategy<TAgent>;
+  model?: LanguageModel;
 };
 
 export type AgentStep<TAgent extends AnyAgent> = {
@@ -150,51 +154,33 @@ export type AgentStrategy<TAgent extends AnyAgent> = (
 ) => Promise<AgentDecision<TAgent> | undefined>;
 
 export type AgentInteractInput<T extends AnyAgent> = Omit<
-  AgentDecideOptions<T>,
+  AgentDecideInput<T>,
   'state'
 > & {
   state?: never;
 };
 
-export type AgentDecideOptions<TAgent extends AnyAgent> = {
-  goal: string;
-  state: ObservedState<TAgent>;
-  /**
-   * The context to provide in the prompt to the agent. This overrides the `state.context`.
-   */
-  context?: Record<string, any>;
-  machine?: AnyStateMachine;
-  model?: LanguageModel;
-  execute?: (event: AnyEventObject) => Promise<void>;
-  strategy?: AgentStrategy<TAgent>;
-  events?: ZodEventMapping;
-  allowedEvents?: Array<EventFromAgent<TAgent>['type']>;
-  /**
-   * The maximum number of times the agent will attempt to make a decision.
-   * Defaults to 2.
-   */
-  maxAttempts?: number;
-} & Omit<Parameters<typeof generateText>[0], 'model' | 'tools' | 'prompt'>;
-
-export interface AgentFeedback {
-  observationId: string;
+export type AgentFeedback = {
   score: number;
   comment: string | undefined;
-  /**
-   * The message correlation that the feedback is relevant for
-   */
   attributes: Record<string, any>;
   timestamp: number;
   episodeId: string;
-}
+} & (
+  | { observationId: string; decisionId?: never }
+  | { decisionId: string; observationId?: never }
+);
 
-export interface AgentFeedbackInput {
-  observationId: string;
+export type AgentFeedbackInput = {
+  episodeId?: string;
   score: number;
   comment?: string;
   attributes?: Record<string, any>;
   timestamp?: number;
-}
+} & (
+  | { observationId: string; decisionId?: never }
+  | { decisionId: string; observationId?: never }
+);
 
 export type AgentMessage = CoreMessage & {
   timestamp: number;
@@ -336,23 +322,29 @@ export type AgentMessageInput = CoreMessage & {
 
 export interface AgentObservation<TActor extends ActorRefLike> {
   id: string;
+  decisionId?: string | undefined;
   goal?: string;
   prevState: SnapshotFrom<TActor> | undefined;
   event: EventFrom<TActor> | undefined;
   state: SnapshotFrom<TActor>;
-  machineHash: string | undefined;
+  // machineHash: string | undefined;
   episodeId: string;
   timestamp: number;
 }
 
 export interface AgentObservationInput<TAgent extends AnyAgent> {
   id?: string;
+  episodeId?: string;
+  /**
+   * The agent decision that the observation is relevant for
+   */
+  decisionId?: string | undefined;
   prevState?: ObservedState<TAgent>;
   event?: AnyEventObject;
   state: ObservedState<TAgent>;
-  machine?: AnyStateMachine;
+  // machine?: AnyStateMachine;
   timestamp?: number;
-  goal: string | undefined;
+  goal?: string | undefined;
 }
 
 export type AgentDecisionInput = {
