@@ -2,71 +2,12 @@ import { AnyActor, AnyMachineSnapshot, fromPromise } from 'xstate';
 import {
   AnyAgent,
   AgentDecisionLogic,
-  AgentDecision,
   AgentDecideInput,
   TransitionData,
-  EventFromAgent,
 } from './types';
 import { getTransitions } from './utils';
-import { CoreMessage, CoreTool, tool } from 'ai';
+import { CoreTool, tool } from 'ai';
 import { ZodEventMapping } from './schemas';
-
-export async function agentDecide<TAgent extends AnyAgent>(
-  agent: TAgent,
-  options: AgentDecideInput<TAgent>
-): Promise<AgentDecision<TAgent> | undefined> {
-  const resolvedOptions = options;
-  const {
-    strategy = agent.strategy,
-    goal,
-    allowedEvents,
-    events = agent.events,
-    state,
-    machine,
-    model = agent.model,
-    messages,
-    episodeId = agent.episodeId,
-    maxAttempts = 2,
-    ...otherDecideInput
-  } = resolvedOptions;
-
-  const filteredEventSchemas = allowedEvents
-    ? Object.fromEntries(
-        Object.entries(events).filter(([key]) => {
-          return allowedEvents.includes(key as EventFromAgent<TAgent>['type']);
-        })
-      )
-    : events;
-
-  let attempts = 0;
-
-  let decision: AgentDecision<any> | undefined;
-
-  const minimalState = {
-    value: state.value,
-    context: state.context,
-  };
-
-  while (attempts++ < maxAttempts) {
-    decision = await strategy(agent, {
-      episodeId,
-      model,
-      goal,
-      events: filteredEventSchemas,
-      state: minimalState,
-      machine,
-      messages: messages as CoreMessage[], // TODO: fix UIMessage thing
-      ...otherDecideInput,
-    });
-
-    if (decision?.nextEvent) {
-      agent.addDecision(decision);
-      break;
-    }
-  }
-
-  return decision;
-}
 
 export function fromDecision<TAgent extends AnyAgent>(
   agent: TAgent,
@@ -85,7 +26,7 @@ export function fromDecision<TAgent extends AnyAgent>(
       ...inputObject,
     };
 
-    const decision = await agentDecide<typeof agent>(agent, {
+    const decision = await agent.decide({
       machine: (parentRef as AnyActor).logic,
       state: snapshot,
       ...resolvedInput,

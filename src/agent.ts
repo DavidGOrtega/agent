@@ -26,20 +26,17 @@ import {
   AnyAgent,
   AgentInteractInput,
   AgentDecideInput,
+  EventFromAgent,
 } from './types';
 import { simpleStrategy } from './strategies/simpleStrategy';
-import { agentDecide } from './decide';
 import { isActorRef, isMachineActor, randomId } from './utils';
 import {
+  CoreMessage,
   experimental_wrapLanguageModel,
   LanguageModel,
   LanguageModelV1,
 } from 'ai';
 import { createAgentMiddleware } from './middleware';
-import {
-  createInMemoryStorage,
-  DefaultQueryObject,
-} from './storage/inMemoryStorage';
 
 export const agentLogic: AgentLogic<any> = fromTransition(
   (state, event, { emit }) => {
@@ -385,15 +382,15 @@ export class Agent<
 
     const agent = this;
 
-    async function handleObservation(
+    const handleObservation = async (
       observationInput: AgentObservationInput<any>
-    ) {
+    ) => {
       const observation = agent.addObservation(observationInput);
 
       const interactInput = getInput?.(observation);
 
       if (interactInput) {
-        const decision = await agentDecide(agent, {
+        const decision = await this.decide({
           machine,
           state: observation.state,
           ...interactInput,
@@ -407,7 +404,7 @@ export class Agent<
       }
 
       prevState = observationInput.state;
-    }
+    };
 
     // Inspect system, but only observe specified actor
     const sub = actorRefCheck
@@ -522,6 +519,56 @@ export class Agent<
   public async decide(
     input: AgentDecideInput<this>
   ): Promise<AgentDecision<this> | undefined> {
-    return agentDecide(this, input);
+    const resolvedOptions = input;
+    const {
+      strategy = this.strategy,
+      goal,
+      allowedEvents,
+      events = this.events,
+      state,
+      machine,
+      model = this.model,
+      messages,
+      episodeId = this.episodeId,
+      maxAttempts = 2,
+      ...otherDecideInput
+    } = resolvedOptions;
+
+    const filteredEventSchemas = allowedEvents
+      ? Object.fromEntries(
+          Object.entries(events).filter(([key]) => {
+            return allowedEvents.includes(key as EventFromAgent<this>['type']);
+          })
+        )
+      : events;
+
+    let attempts = 0;
+
+    let decision: AgentDecision<any> | undefined;
+
+    const minimalState = {
+      value: state.value,
+      context: state.context,
+    };
+
+    while (attempts++ < maxAttempts) {
+      decision = await strategy(this, {
+        episodeId,
+        model,
+        goal,
+        events: filteredEventSchemas,
+        state: minimalState,
+        machine,
+        messages: messages as CoreMessage[], // TODO: fix UIMessage thing
+        ...otherDecideInput,
+      });
+
+      if (decision?.nextEvent) {
+        this.addDecision(decision);
+        break;
+      }
+    }
+
+    return decision;
   }
 }

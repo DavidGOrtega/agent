@@ -46,9 +46,9 @@ export async function experimental_shortestPathStrategy<T extends AnyAgent>(
 ): Promise<AgentDecision<any> | undefined> {
   const costFunction: CostFunction<any> =
     input.costFunction ?? ((path) => path.weight ?? Infinity);
-  const existingDecision = agent
-    .getDecisions()
-    .find((p) => p.strategy === 'shortestPath' && p.goal === input.goal);
+  const existingDecision = input.decisions?.find(
+    (p) => p.strategy === 'shortestPath' && p.goal === input.goal
+  );
 
   let paths = existingDecision?.paths;
 

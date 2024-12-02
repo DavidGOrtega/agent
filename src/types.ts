@@ -79,6 +79,7 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
    * The previous relevant observations from the agent.
    */
   observations?: AgentObservation<any>[];
+  decisions?: AgentDecision<TAgent>[];
 };
 
 export type AgentStep<TAgent extends AnyAgent> = {
