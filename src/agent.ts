@@ -3,6 +3,7 @@ import {
   ActorRefLike,
   EventObject,
   fromTransition,
+  SnapshotFrom,
   Subscription,
 } from 'xstate';
 import { ZodContextMapping, ZodEventMapping } from './schemas';
@@ -35,6 +36,10 @@ import {
   LanguageModelV1,
 } from 'ai';
 import { createAgentMiddleware } from './middleware';
+import {
+  createInMemoryStorage,
+  DefaultQueryObject,
+} from './storage/inMemoryStorage';
 
 export const agentLogic: AgentLogic<any> = fromTransition(
   (state, event, { emit }) => {
@@ -105,7 +110,7 @@ export function createAgent<
   context,
   episodeId,
   strategy = simpleStrategy,
-  logic = agentLogic as AgentLogic<any>,
+  logic = agentLogic,
 }: {
   /**
    * The unique identifier for the agent.
@@ -161,9 +166,7 @@ export function createAgent<
 
 export class Agent<
   const TContextSchema extends ZodContextMapping,
-  const TEventSchemas extends ZodEventMapping,
-  TEvents extends EventObject = EventsFromZodEventMapping<TEventSchemas>,
-  TContext = ContextFromZodContextMapping<TContextSchema>
+  const TEventSchemas extends ZodEventMapping
 > extends Actor<AgentLogic<any>> {
   /**
    * The name of the agent. All agents with the same name are related and
@@ -178,10 +181,6 @@ export class Agent<
   public events: TEventSchemas;
   public context?: TContextSchema;
   public strategy: AgentStrategy<Agent<TContextSchema, TEventSchemas>>;
-  // public types: {
-  //   events: TEvents;
-  //   context: Compute<TContext>;
-  // };
   public model: LanguageModel;
   public memory: AgentLongTermMemory<this> | undefined;
 
@@ -426,14 +425,16 @@ export class Agent<
               | string
               | undefined;
 
+            const decisions = agent.getDecisions();
+
             const decision = decisionId
-              ? agent.getDecisions().find((d) => d.id === decisionId)
+              ? decisions.find((d) => d.id === decisionId)
               : undefined;
 
             const observationInput = {
               event: inspEvent.event,
               prevState,
-              state: inspEvent.snapshot as any,
+              state: inspEvent.snapshot as SnapshotFrom<TActor>,
               goal: decision?.goal,
               decisionId,
             } satisfies AgentObservationInput<any>;
@@ -478,15 +479,18 @@ export class Agent<
             const decisionId = inspEvent.event['_decision'] as
               | string
               | undefined;
+
+            const decisions = this.getDecisions();
+
             const decision = decisionId
-              ? this.getDecisions().find((d) => d.id === decisionId)
+              ? decisions.find((d) => d.id === decisionId)
               : undefined;
 
             const observationInput = {
               decisionId,
               event: inspEvent.event,
               prevState,
-              state: inspEvent.snapshot as any,
+              state: inspEvent.snapshot as SnapshotFrom<TActor>,
               goal: decision?.goal,
             } satisfies AgentObservationInput<this>;
 

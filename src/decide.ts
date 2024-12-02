@@ -33,7 +33,7 @@ export async function agentDecide<TAgent extends AnyAgent>(
   const filteredEventSchemas = allowedEvents
     ? Object.fromEntries(
         Object.entries(events).filter(([key]) => {
-          return allowedEvents.includes(key);
+          return allowedEvents.includes(key as EventFromAgent<TAgent>['type']);
         })
       )
     : events;
@@ -68,9 +68,9 @@ export async function agentDecide<TAgent extends AnyAgent>(
   return decision;
 }
 
-export function fromDecision<T extends AnyAgent>(
-  agent: T,
-  defaultInput?: AgentDecideInput<EventFromAgent<T>>
+export function fromDecision<TAgent extends AnyAgent>(
+  agent: TAgent,
+  defaultInput?: AgentDecideInput<TAgent>
 ): AgentDecisionLogic<any> {
   return fromPromise(async ({ input, self }) => {
     const parentRef = self._parent;

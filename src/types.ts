@@ -4,7 +4,6 @@ import {
   AnyEventObject,
   AnyStateMachine,
   EventFrom,
-  EventObject,
   PromiseActorLogic,
   SnapshotFrom,
   StateValue,
@@ -13,7 +12,6 @@ import {
 } from 'xstate';
 import {
   CoreMessage,
-  GenerateObjectResult,
   generateText,
   GenerateTextResult,
   LanguageModel,
@@ -73,6 +71,14 @@ export type AgentDecideInput<TAgent extends AnyAgent> = Omit<
   maxAttempts?: number;
   strategy?: AgentStrategy<TAgent>;
   model?: LanguageModel;
+  /**
+   * The previous relevant feedback from the agent.
+   */
+  feedback?: AgentFeedback[];
+  /**
+   * The previous relevant observations from the agent.
+   */
+  observations?: AgentObservation<any>[];
 };
 
 export type AgentStep<TAgent extends AnyAgent> = {
@@ -150,7 +156,7 @@ export type PromptTemplate<TAgent extends AnyAgent> = (data: {
 
 export type AgentStrategy<TAgent extends AnyAgent> = (
   agent: TAgent,
-  input: AgentDecideInput<EventFromAgent<TAgent>>
+  input: AgentDecideInput<TAgent>
 ) => Promise<AgentDecision<TAgent> | undefined>;
 
 export type AgentInteractInput<T extends AnyAgent> = Omit<
@@ -322,13 +328,13 @@ export type AgentMessageInput = CoreMessage & {
 
 export interface AgentObservation<TActor extends ActorRefLike> {
   id: string;
+  episodeId: string;
   decisionId?: string | undefined;
   goal?: string;
   prevState: SnapshotFrom<TActor> | undefined;
   event: EventFrom<TActor> | undefined;
   state: SnapshotFrom<TActor>;
   // machineHash: string | undefined;
-  episodeId: string;
   timestamp: number;
 }
 
@@ -414,7 +420,7 @@ export type ContextFromZodContextMapping<
   [K in keyof TContextSchema & string]: TypeOf<TContextSchema[K]>;
 };
 
-export type AnyAgent = Agent<any, any, any, any>;
+export type AnyAgent = Agent<any, any>;
 
 export type FromAgent<T> = T | ((agent: AnyAgent) => T | Promise<T>);
 
@@ -456,7 +462,7 @@ export type ObservedStateFrom<TActor extends ActorRefLike> = Pick<
 >;
 
 export type AgentMemoryContext<TAgent extends AnyAgent> = {
-  observations: AgentObservation<TAgent>[]; // TODO
+  observations: AgentObservation<any>[]; // TODO
   messages: AgentMessage[];
   decisions: AgentDecision<TAgent>[];
   feedback: AgentFeedback[];
@@ -482,11 +488,9 @@ export type MaybePromise<T> = T | Promise<T>;
 
 export type EventFromAgent<T extends AnyAgent> = T extends Agent<
   infer _,
-  infer __,
-  infer TEvents,
-  infer ___
+  infer TEventSchemas
 >
-  ? TEvents
+  ? EventsFromZodEventMapping<TEventSchemas>
   : never;
 
 export type TypesFromAgent<T extends AnyAgent> = T extends Agent<
@@ -505,3 +509,21 @@ export type ContextFromAgent<T extends AnyAgent> = T extends Agent<
 >
   ? ContextFromZodContextMapping<TContextSchema>
   : never;
+
+export interface StorageAdapter<TAgent extends AnyAgent, TQuery> {
+  addObservation(
+    observationInput: AgentObservationInput<TAgent>
+  ): Promise<AgentObservation<any>>;
+  getObservations(queryObject?: TQuery): Promise<AgentObservation<any>[]>;
+  addFeedback(feedbackInput: AgentFeedbackInput): Promise<AgentFeedback>;
+  getFeedback(queryObject?: TQuery): Promise<AgentFeedback[]>;
+  addMessage(messageInput: AgentMessageInput): Promise<AgentMessage>;
+  getMessages(queryObject?: TQuery): Promise<AgentMessage[]>;
+  addDecision(
+    decisionInput: AgentDecisionInput
+  ): Promise<AgentDecision<TAgent>>;
+  getDecisions(queryObject?: TQuery): Promise<AgentDecision<TAgent>[]>;
+}
+
+export type StorageAdapterQuery<T extends StorageAdapter<any, any>> =
+  T extends StorageAdapter<infer _, infer TQuery> ? TQuery : never;
