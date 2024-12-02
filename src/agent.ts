@@ -96,8 +96,6 @@ export const agentLogic: AgentLogic<any> = fromTransition(
 export function createAgent<
   const TContextSchema extends ZodContextMapping,
   const TEventSchemas extends ZodEventMapping,
-  TEvents extends EventObject = EventsFromZodEventMapping<TEventSchemas>,
-  TContext = ContextFromZodContextMapping<TContextSchema>,
   TAgent extends AnyAgent = Agent<TContextSchema, TEventSchemas>
 >({
   id,
