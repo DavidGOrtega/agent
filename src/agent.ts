@@ -214,17 +214,31 @@ export class Agent<
   }
 
   /**
-   * Called whenever the agent (LLM assistant) receives or sends a message.
+   * Called whenever the agent detects that a message was sent from the human, assistant, or system.
    */
   public onMessage(fn: (message: AgentMessage) => void) {
     return this.on('message', (ev) => fn(ev.message));
   }
 
   /**
-   * Called whenever the agent (LLM assistant) receives some feedback.
+   * Called whenever the agent receives some feedback.
    */
   public onFeedback(fn: (feedback: AgentFeedback) => void) {
     return this.on('feedback', (ev) => fn(ev.feedback));
+  }
+
+  /**
+   * Called whenever the agent receives an observation.
+   */
+  public onObservation(fn: (observation: AgentObservation<this>) => void) {
+    return this.on('observation', (ev) => fn(ev.observation));
+  }
+
+  /**
+   * Called whenever the agent makes a decision.
+   */
+  public onDecision(fn: (decision: AgentDecision<this>) => void) {
+    return this.on('decision', (ev) => fn(ev.decision));
   }
 
   /**

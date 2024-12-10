@@ -1,5 +1,10 @@
 import { test, expect, vi } from 'vitest';
-import { AgentDecision, createAgent, TypesFromAgent } from './';
+import {
+  AgentDecision,
+  AgentFeedbackInput,
+  createAgent,
+  TypesFromAgent,
+} from './';
 import { createActor, createMachine } from 'xstate';
 import { LanguageModelV1CallOptions } from 'ai';
 import { z } from 'zod';
@@ -292,14 +297,25 @@ test('You can listen for feedback events', () => {
     model: {} as any,
   });
 
-  agent.on('feedback', fn);
+  agent.onFeedback(fn);
 
-  agent.addFeedback({
-    score: -1,
+  const feedback = agent.addFeedback({
+    score: 1,
     observationId: 'obs-1',
+    comment: 'Good move',
+    attributes: { confidence: 'high' },
   });
 
-  expect(fn).toHaveBeenCalled();
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      score: 1,
+      observationId: 'obs-1',
+      comment: 'Good move',
+      attributes: { confidence: 'high' },
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
 });
 
 test('You can listen for decision events', async () => {
@@ -613,6 +629,243 @@ test('agent.addFeedback() accepts decisionId', () => {
   expect(agent.getFeedback()).toContainEqual(
     expect.objectContaining({
       decisionId,
+    })
+  );
+});
+
+test('You can listen for observation events', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  agent.onObservation(fn);
+
+  const observation = agent.addObservation({
+    state: { value: 'playing' },
+    goal: 'Win the game',
+  });
+
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      state: { value: 'playing' },
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+});
+
+test('You can listen for decision events', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {
+      MOVE: z.object({}),
+    },
+    model: {} as any,
+  });
+
+  agent.onDecision(fn);
+
+  const decision = {
+    id: 'decision-1',
+    episodeId: agent.episodeId,
+    strategy: 'test-strategy',
+    goal: 'Win the game',
+    goalState: { value: 'won' },
+    paths: [],
+    nextEvent: { type: 'MOVE' },
+    timestamp: Date.now(),
+  } satisfies AgentDecision<typeof agent>;
+
+  agent.addDecision(decision);
+
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      id: 'decision-1',
+      episodeId: agent.episodeId,
+      strategy: 'test-strategy',
+      goal: 'Win the game',
+      nextEvent: { type: 'MOVE' },
+    })
+  );
+});
+
+test('Event listeners can be unsubscribed (onObservation)', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const subscription = agent.onObservation(fn);
+
+  agent.addObservation({
+    state: { value: 'playing' },
+    goal: 'Win the game',
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1);
+
+  subscription.unsubscribe();
+
+  agent.addObservation({
+    state: { value: 'playing' },
+    goal: 'Win the game again',
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1); // Still only called once
+});
+
+test('Event listeners can be unsubscribed (onDecision)', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {
+      MOVE: z.object({}),
+    },
+    model: {} as any,
+  });
+
+  const subscription = agent.onDecision(fn);
+
+  const decision = {
+    id: 'decision-1',
+    episodeId: agent.episodeId,
+    strategy: 'test-strategy',
+    goal: 'Win the game',
+    goalState: { value: 'won' },
+    paths: [],
+    nextEvent: { type: 'MOVE' },
+    timestamp: Date.now(),
+  } satisfies AgentDecision<typeof agent>;
+
+  agent.addDecision(decision);
+
+  expect(fn).toHaveBeenCalledTimes(1);
+
+  subscription.unsubscribe();
+
+  agent.addDecision({
+    ...decision,
+    id: 'decision-2',
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1); // Still only called once
+});
+
+test('Event listeners can be unsubscribed (onFeedback)', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const subscription = agent.onFeedback(fn);
+
+  agent.addFeedback({
+    score: 1,
+    observationId: 'obs-1',
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1);
+
+  subscription.unsubscribe();
+
+  agent.addFeedback({
+    score: 0,
+    observationId: 'obs-2',
+  });
+
+  expect(fn).toHaveBeenCalledTimes(1); // Still only called once
+});
+
+test('Feedback events include optional fields', () => {
+  const fn = vi.fn();
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  agent.onFeedback(fn);
+
+  // Test with minimal feedback
+  agent.addFeedback({
+    score: 1,
+    observationId: 'obs-1',
+  });
+
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      score: 1,
+      observationId: 'obs-1',
+      comment: undefined,
+      attributes: {},
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+
+  // Test with all optional fields
+  agent.addFeedback({
+    score: 0,
+    observationId: 'obs-2',
+    comment: 'Could be better',
+    attributes: { reason: 'suboptimal' },
+  } satisfies AgentFeedbackInput);
+
+  expect(fn).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      score: 0,
+      observationId: 'obs-2',
+      comment: 'Could be better',
+      attributes: { reason: 'suboptimal' },
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+});
+
+test('Feedback events maintain episodeId consistency', () => {
+  const fn = vi.fn();
+  const customEpisodeId = 'custom-episode-123';
+
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+    episodeId: customEpisodeId,
+  });
+
+  agent.onFeedback(fn);
+
+  agent.addFeedback({
+    score: 1,
+    observationId: 'obs-1',
+  });
+
+  expect(fn).toHaveBeenCalledWith(
+    expect.objectContaining({
+      episodeId: customEpisodeId,
+    })
+  );
+
+  // Test with explicit different episodeId
+  const differentEpisodeId = 'different-episode-456';
+  agent.addFeedback({
+    score: 0,
+    observationId: 'obs-2',
+    episodeId: differentEpisodeId,
+  });
+
+  expect(fn).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      episodeId: differentEpisodeId,
     })
   );
 });
