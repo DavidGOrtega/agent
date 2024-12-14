@@ -381,6 +381,10 @@ export type AgentEmitted<TAgent extends AnyAgent> =
   | {
       type: 'decision';
       decision: AgentDecision<TAgent>;
+    }
+  | {
+      type: 'insight';
+      insight: AgentInsight;
     };
 
 export type AgentLogic<TAgent extends AnyAgent> = ActorLogic<
@@ -400,6 +404,10 @@ export type AgentLogic<TAgent extends AnyAgent> = ActorLogic<
   | {
       type: 'agent.decision';
       decision: AgentDecision<TAgent>;
+    }
+  | {
+      type: 'agent.insight';
+      insight: AgentInsight;
     },
   any, // TODO: input
   any,
@@ -467,6 +475,7 @@ export type AgentMemoryContext<TAgent extends AnyAgent> = {
   messages: AgentMessage[];
   decisions: AgentDecision<TAgent>[];
   feedback: AgentFeedback[];
+  insights: AgentInsight[];
 };
 
 export interface AgentLongTermMemory<TAgent extends AnyAgent> {
@@ -528,3 +537,18 @@ export interface StorageAdapter<TAgent extends AnyAgent, TQuery> {
 
 export type StorageAdapterQuery<T extends StorageAdapter<any, any>> =
   T extends StorageAdapter<infer _, infer TQuery> ? TQuery : never;
+
+export type AgentInsightInput = {
+  observationId: string;
+  episodeId?: string;
+  id?: string;
+  timestamp?: number;
+  attributes: Record<string, any>;
+};
+
+export interface AgentInsight {
+  id: string;
+  episodeId: string;
+  observationId: string;
+  timestamp: number;
+}

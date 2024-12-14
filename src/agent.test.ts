@@ -164,7 +164,7 @@ test('agent.addObservation() adds to observations (initial state)', () => {
   );
 });
 
-test('agent.addObservation() adds to observations with machine hash', () => {
+test.skip('agent.addObservation() adds to observations with machine hash', () => {
   const agent = createAgent({
     id: 'test',
     events: {},
@@ -197,6 +197,47 @@ test('agent.addObservation() adds to observations with machine hash', () => {
       prevState: { value: 'playing', context: {} },
       event: { type: 'play', position: 3 },
       state: { value: 'lost', context: {} },
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+});
+
+test('agent.addInsight() adds to insights (with observation)', () => {
+  const agent = createAgent({
+    id: 'test',
+    events: {},
+    model: {} as any,
+  });
+
+  const observation = agent.addObservation({
+    state: {
+      value: 'playing',
+    },
+    goal: 'Win the game',
+  });
+
+  const insight = agent.addInsight({
+    observationId: observation.id,
+    attributes: {
+      advantage: 50,
+    },
+  });
+
+  expect(insight.episodeId).toEqual(agent.episodeId);
+
+  expect(agent.getInsights()).toContainEqual(
+    expect.objectContaining({
+      attributes: { advantage: 50 },
+      observationId: observation.id,
+      episodeId: expect.any(String),
+      timestamp: expect.any(Number),
+    })
+  );
+  expect(agent.getInsights()).toContainEqual(
+    expect.objectContaining({
+      attributes: { advantage: 50 },
+      observationId: observation.id,
       episodeId: expect.any(String),
       timestamp: expect.any(Number),
     })

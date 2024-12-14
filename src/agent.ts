@@ -27,6 +27,8 @@ import {
   AgentInteractInput,
   AgentDecideInput,
   EventFromAgent,
+  AgentInsightInput,
+  AgentInsight,
 } from './types';
 import { simpleStrategy } from './strategies/simpleStrategy';
 import { isActorRef, isMachineActor, randomId } from './utils';
@@ -76,6 +78,14 @@ export const agentLogic: AgentLogic<any> = fromTransition(
         });
         break;
       }
+      case 'agent.insight': {
+        state.insights.push(event.insight);
+        emit({
+          type: 'insight',
+          insight: event.insight,
+        });
+        break;
+      }
       default: {
         // unrecognized
         console.warn('Unrecognized event', event);
@@ -90,6 +100,7 @@ export const agentLogic: AgentLogic<any> = fromTransition(
       messages: [],
       observations: [],
       decisions: [],
+      insights: [],
     } as AgentMemoryContext<any>)
 );
 
@@ -315,6 +326,26 @@ export class Agent<
    */
   public getObservations() {
     return this.getSnapshot().context.observations;
+  }
+
+  public addInsight(insightInput: AgentInsightInput): AgentInsight {
+    const insight = {
+      ...insightInput,
+      episodeId: insightInput.episodeId ?? this.episodeId,
+      id: insightInput.id ?? randomId(),
+      timestamp: insightInput.timestamp ?? Date.now(),
+    } satisfies AgentInsight;
+
+    this.send({
+      type: 'agent.insight',
+      insight,
+    });
+
+    return insight;
+  }
+
+  public getInsights() {
+    return this.getSnapshot().context.insights;
   }
 
   public addDecision(decision: AgentDecision<this>) {
