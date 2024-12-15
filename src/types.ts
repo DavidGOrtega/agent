@@ -97,7 +97,7 @@ export type AgentPath<TAgent extends AnyAgent> = {
   weight?: number;
 };
 
-export type AgentDecision<TAgent extends AnyAgent> = {
+export type AgentDecision<TAgent extends AnyAgent = AnyAgent> = {
   id: string;
   /**
    * The strategy used to generate the decision
