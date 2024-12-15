@@ -6,7 +6,7 @@ import {
   AnyAgent,
 } from '../types';
 import { convertToXml, randomId } from '../utils';
-import { getNextSnapshot } from 'xstate';
+import { transition } from 'xstate';
 import { getMessages } from '../text';
 import { getToolMap } from '../decide';
 
@@ -61,13 +61,7 @@ export async function simpleStrategy<T extends AnyAgent>(
   });
 
   result.response.messages.forEach((m) => {
-    const message: CoreMessage = m;
-
-    agent.addMessage({
-      ...message,
-      id: randomId(),
-      timestamp: Date.now(),
-    });
+    agent.addMessage(m);
   });
 
   const singleResult = result.toolResults[0];
@@ -78,12 +72,14 @@ export async function simpleStrategy<T extends AnyAgent>(
     return undefined;
   }
 
+  const nextEvent = singleResult.result;
+
   return {
     id: randomId(),
     strategy: 'simple',
     goal: input.goal,
     goalState: input.state,
-    nextEvent: singleResult.result,
+    nextEvent,
     episodeId: input.episodeId ?? agent.episodeId,
     timestamp: Date.now(),
     paths: [
@@ -91,10 +87,10 @@ export async function simpleStrategy<T extends AnyAgent>(
         state: undefined,
         steps: [
           {
-            event: singleResult.result,
+            event: nextEvent,
             state:
               machine && machineState
-                ? getNextSnapshot(machine, machineState, singleResult.result)
+                ? transition(machine, machineState, nextEvent)[0]
                 : undefined,
           },
         ],

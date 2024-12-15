@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@xstate/graph':
         specifier: ^2.0.1
-        version: 2.0.1(xstate@5.18.2)
+        version: 2.0.1(xstate@5.19.0)
       ai:
         specifier: ^3.4.31
         version: 3.4.31(openai@4.68.4(zod@3.23.8))(react@18.3.1)(sswr@2.1.0(svelte@5.1.3))(svelte@5.1.3)(vue@3.5.12(typescript@5.6.3))(zod@3.23.8)
@@ -21,8 +21,8 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
       xstate:
-        specifier: ^5.18.2
-        version: 5.18.2
+        specifier: ^5.19.0
+        version: 5.19.0
       zod-to-json-schema:
         specifier: ^3.23.5
         version: 3.23.5(zod@3.23.8)
@@ -2271,8 +2271,8 @@ packages:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==, tarball: https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-8.1.0.tgz}
     engines: {node: '>=12'}
 
-  xstate@5.18.2:
-    resolution: {integrity: sha512-hab5VOe29D0agy8/7dH1lGw+7kilRQyXwpaChoMu4fe6rDP+nsHYhDYKfS2O4iXE7myA98TW6qMEudj/8NXEkA==, tarball: https://registry.npmjs.org/xstate/-/xstate-5.18.2.tgz}
+  xstate@5.19.0:
+    resolution: {integrity: sha512-Juh1MjeRaVWr1IRxXYvQMMRFMrei6vq6+AfP6Zk9D9YV0ZuvubN0aM6s2ITwUrq+uWtP1NTO8kOZmsM/IqeOiQ==, tarball: https://registry.npmjs.org/xstate/-/xstate-5.19.0.tgz}
 
   yallist@2.1.2:
     resolution: {integrity: sha512-ncTzHV7NvsQZkYe1DW7cbDLm0YpzHmZF5r/iyP3ZnQtMiJ+pjzisCiMNI+Sj+xQF5pXhSHxSB3uDbsBTzY/c2A==, tarball: https://registry.npmjs.org/yallist/-/yallist-2.1.2.tgz}
@@ -3012,9 +3012,9 @@ snapshots:
 
   '@vue/shared@3.5.12': {}
 
-  '@xstate/graph@2.0.1(xstate@5.18.2)':
+  '@xstate/graph@2.0.1(xstate@5.19.0)':
     dependencies:
-      xstate: 5.18.2
+      xstate: 5.19.0
 
   abort-controller@3.0.0:
     dependencies:
@@ -4126,7 +4126,7 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.1.0
 
-  xstate@5.18.2: {}
+  xstate@5.19.0: {}
 
   yallist@2.1.2: {}
 
